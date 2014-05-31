@@ -92,3 +92,7 @@ Vagrantfile
 # Travis #
 ##########
 .travis.yml
+
+# tmux #
+##########
+.tmux
