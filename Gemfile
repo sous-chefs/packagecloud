@@ -1,6 +1,11 @@
 source 'https://rubygems.org'
 
 gem 'berkshelf'
+gem 'busser-serverspec'
+gem 'busser'
+gem 'test-kitchen'
+gem 'psych'
+gem 'kitchen-vagrant'
 
 # Uncomment these lines if you want to live on the Edge:
 #
