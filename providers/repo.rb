@@ -8,8 +8,10 @@ action :add do
     install_deb
   when "rpm"
     install_rpm
+  when "gem"
+    install_gem
   else
-    raise "Unimplemented."
+    raise "#{new_resource.type} is an unknown package type."
   end
 end
 
@@ -74,6 +76,29 @@ def install_rpm
     sslverify true
     gpgkey    "https://packagecloud.io/gpg.key"
     gpgcheck  false
+  end
+end
+
+def install_gem
+  name = new_resource.name
+  filename = name.sub("/", "_")
+
+  repo_url = URI("https://packagecloud.io/#{name}/")
+
+  if new_resource.master_token
+    uri = URI(BASE_URL + "#{name}/tokens.text")
+    uri.user     = new_resource.master_token
+    uri.password = ""
+
+    resp = post(uri, :name => node[:fqdn])
+
+    repo_url.user     = resp.body.chomp
+    repo_url.password = ""
+  end
+
+  execute "install packagecloud #{name} repo as gem source" do
+    command "gem source --add #{repo_url.to_s}"
+    not_if "gem source --list | rgep #{repo_url.to_s}"
   end
 end
 

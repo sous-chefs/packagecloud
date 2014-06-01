@@ -10,10 +10,12 @@ platforms:
     box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_provisionerless.box
   run_list:
     - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::rubygems_private]
 
 - name: centos-6.5
   run_list:
     - recipe[packagecloud_test::rpm]
+    - recipe[packagecloud_test::rubygems]
 
 suites:
 - name: default

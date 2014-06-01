@@ -5,6 +5,6 @@ include Serverspec::Helper::DetectOS
 
 RSpec.configure do |c|
   c.before :all do
-    c.path = '/sbin:/usr/sbin'
+    c.path = '/sbin:/usr/sbin:/usr/local/bin'
   end
 end
