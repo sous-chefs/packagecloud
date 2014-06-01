@@ -1,3 +1,5 @@
+require "net/https"
+
 BASE_URL = "https://packagecloud.io/install/repositories/"
 
 action :add do
@@ -20,9 +22,9 @@ def install_deb
     uri.user     = new_resource.master_token
     uri.password = ""
 
-    resp, data = Net::HTTP.post_form(uri, :os   => node[:platform],
-                                          :dist => node['lsb']['codename'],
-                                          :name => node[:fqdn])
+    resp = post uri, :os   => node[:platform],
+                     :dist => node['lsb']['codename'],
+                     :name => node[:fqdn]
 
     url = "https://#{resp.body.chomp}:@packagecloud.io/#{name}/#{node[:platform]}/"
   else
@@ -35,5 +37,26 @@ def install_deb
     components   ["main"]
     keyserver    "pgp.mit.edu"
     key          "D59097AB"
+  end
+end
+
+def post(uri, params)
+  req           = Net::HTTP::Post.new(uri.request_uri)
+  req.form_data = params
+
+  req.basic_auth uri.user, uri.password if uri.user
+
+  http = Net::HTTP.new(uri.hostname, uri.port)
+  http.use_ssl = true
+
+  resp = http.start {|http|
+    http.request(req)
+  }
+
+  case resp
+  when Net::HTTPSuccess
+    resp
+  else
+    raise resp.inspect
   end
 end
