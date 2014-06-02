@@ -1,51 +1,28 @@
-# packagecloud-cookbook
+# packagecloud cookbook
 
-TODO: Enter the cookbook description here.
-
-## Supported Platforms
-
-TODO: List your supported platforms.
-
-## Attributes
-
-<table>
-  <tr>
-    <th>Key</th>
-    <th>Type</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>['packagecloud']['bacon']</tt></td>
-    <td>Boolean</td>
-    <td>whether to include bacon</td>
-    <td><tt>true</tt></td>
-  </tr>
-</table>
+This cookbook provides an LWRP for installing http://packagecloud.io repositories.
 
 ## Usage
 
-### packagecloud::default
+For public repos:
 
-Include `packagecloud` in your node's `run_list`:
-
-```json
-{
-  "run_list": [
-    "recipe[packagecloud::default]"
-  ]
-}
+```ruby
+packagecloud_repo "computology/packagecloud-cookbook-test-public" do
+  type "deb"
+end
 ```
 
-## Contributing
+For private repos, you need to supply a `master_token`:
 
-1. Fork the repository on Github
-2. Create a named feature branch (i.e. `add-new-recipe`)
-3. Write your change
-4. Write tests for your change (if applicable)
-5. Run the tests, ensuring they all pass
-6. Submit a Pull Request
+```ruby
+packagecloud_repo "computology/packagecloud-cookbook-test-private" do
+  type "deb"
+  master_token "762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9"
+end
+```
 
-## License and Authors
+Valid options for `type` include `deb`, `rpm`, and `gem`.
 
-Author:: YOUR_NAME (<YOUR_EMAIL>)
+## Credits
+
+Written by James Golick, Computology, LLC.
