@@ -1,5 +1,6 @@
 require "net/https"
 
+BASE_REPO_URL = "https://packagecloud.io/"
 BASE_URL = "https://packagecloud.io/install/repositories/"
 
 action :add do
@@ -15,28 +16,36 @@ action :add do
   end
 end
 
-def install_deb
-  name = new_resource.name
-  filename = name.sub("/", "_")
+def install_endpoint_params(dist)
+  {:os   => node[:platform],
+   :dist => dist,
+   :name => node[:fqdn]}
+end
 
-  package "apt-transport-https"
-
+def set_read_token(repo_url, dist)
   if new_resource.master_token
-    uri = URI(BASE_URL + "#{name}/tokens.text")
+    uri = URI(BASE_URL + "#{new_resource.name}/tokens.text")
     uri.user     = new_resource.master_token
     uri.password = ""
 
-    resp = post uri, :os   => node[:platform],
-                     :dist => node['lsb']['codename'],
-                     :name => node[:fqdn]
+    resp = post(uri, install_endpoint_params(dist))
 
-    url = "https://#{resp.body.chomp}:@packagecloud.io/#{name}/#{node[:platform]}/"
-  else
-    url = "https://packagecloud.io/#{name}/#{node[:platform]}/"
+    repo_url.user     = resp.body.chomp
+    repo_url.password = ""
   end
+end
+
+def install_deb
+  name     = new_resource.name
+  filename = name.sub("/", "_")
+  repo_url = URI("#{BASE_REPO_URL}/#{name}/#{node[:platform]}/")
+
+  package "apt-transport-https"
+
+  set_read_token(repo_url, node['lsb']['codename'])
 
   apt_repository filename do
-    uri          url
+    uri          repo_url.to_s
     distribution node["lsb"]["codename"]
     components   ["main"]
     keyserver    "pgp.mit.edu"
@@ -44,57 +53,39 @@ def install_deb
   end
 end
 
-def install_rpm
-  name = new_resource.name
-  filename = name.sub("/", "_")
+def rpm_base_url(dist)
+  base_url_endpoint = URI(BASE_URL + "#{new_resource.name}/rpm_base_url")
 
-  params = {:os   => node[:platform],
-            :dist => node[:platform_version],
-            :name => node[:fqdn]}
-
-  base_url_endpoint = URI(BASE_URL + "#{name}/rpm_base_url")
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
     base_url_endpoint.password = ""
   end
 
-  base_url = URI(get(base_url_endpoint, params).body.chomp)
+  URI(get(base_url_endpoint, install_endpoint_params(dist)).body.chomp)
+end
 
-  if new_resource.master_token
-    uri = URI(BASE_URL + "#{name}/tokens.text")
-    uri.user     = new_resource.master_token
-    uri.password = ""
+def install_rpm
+  name     = new_resource.name
+  filename = name.sub("/", "_")
+  dist     = node[:platform_version]
+  base_url = rpm_base_url(dist)
 
-    resp = post(uri, params)
-
-    base_url.user     = resp.body.chomp
-    base_url.password = ""
-  end
+  set_read_token(base_url, dist)
 
   yum_repository filename do
-    baseurl   base_url.to_s
-    sslverify true
-    gpgkey    "https://packagecloud.io/gpg.key"
-    gpgcheck  false
+    description "https://packagecloud.io/#{name}"
+    baseurl     base_url.to_s
+    sslverify   true
+    gpgkey      "https://packagecloud.io/gpg.key"
+    gpgcheck    false
   end
 end
 
 def install_gem
-  name = new_resource.name
-  filename = name.sub("/", "_")
-
+  name     = new_resource.name
   repo_url = URI("https://packagecloud.io/#{name}/")
 
-  if new_resource.master_token
-    uri = URI(BASE_URL + "#{name}/tokens.text")
-    uri.user     = new_resource.master_token
-    uri.password = ""
-
-    resp = post(uri, :name => node[:fqdn])
-
-    repo_url.user     = resp.body.chomp
-    repo_url.password = ""
-  end
+  set_read_token(repo_url, nil)
 
   execute "install packagecloud #{name} repo as gem source" do
     command "gem source --add #{repo_url.to_s}"
