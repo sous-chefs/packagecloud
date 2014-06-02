@@ -1,6 +1,6 @@
 # packagecloud cookbook
 
-This cookbook provides an LWRP for installing http://packagecloud.io repositories.
+This cookbook provides an LWRP for installing https://packagecloud.io repositories.
 
 ## Usage
 
