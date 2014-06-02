@@ -89,7 +89,7 @@ def install_gem
 
   execute "install packagecloud #{name} repo as gem source" do
     command "gem source --add #{repo_url.to_s}"
-    not_if "gem source --list | rgep #{repo_url.to_s}"
+    not_if "gem source --list | grep #{repo_url.to_s}"
   end
 end
 
