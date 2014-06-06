@@ -1,9 +1,7 @@
-# 0.1.0
+packagecloud
+===============
+This is the Changelog for the packagecloud cookbook
 
-Initial release of packagecloud
-
-* Enhancements
-  * an enhancement
-
-* Bug Fixes
-  * a bug fix
+v0.0.1 (2014-06-05)
+-------------------
+Initial release!
