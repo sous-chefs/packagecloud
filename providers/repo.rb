@@ -46,6 +46,7 @@ def install_deb
 
   apt_repository filename do
     uri          repo_url.to_s
+    deb_src      true
     distribution node["lsb"]["codename"]
     components   ["main"]
     keyserver    "pgp.mit.edu"
