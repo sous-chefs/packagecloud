@@ -10,3 +10,8 @@ packagecloud_repo "computology/packagecloud-cookbook-test-private" do
 end
 
 package "jake-doc"
+
+execute "install_jake_source" do
+  cwd "/home/vagrant"
+  command "apt-get source jake"
+end
