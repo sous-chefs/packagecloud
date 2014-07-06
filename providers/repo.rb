@@ -71,6 +71,8 @@ def install_rpm
   dist     = node[:platform_version]
   base_url = rpm_base_url(dist)
 
+  package "pygpgme"
+
   set_read_token(base_url, dist)
 
   yum_repository filename do
