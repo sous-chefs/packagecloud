@@ -75,18 +75,38 @@ def install_rpm
 
   set_read_token(base_url, dist)
 
-  yum_repository filename do
-    description "https://packagecloud.io/#{name}"
-    baseurl     base_url.to_s
-    sslverify   true
-    gpgkey      "https://packagecloud.io/gpg.key"
-    gpgcheck    false
+  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud" do
+    source "#{BASE_REPO_URL}/gpg.key"
+    mode "0644"
+  end
+
+  template "/etc/yum.repos.d/#{filename}.repo" do
+    source 'yum.erb'
+    cookbook 'packagecloud'
+    mode '0644'
+    variables :base_url    => base_url,
+              :name        => filename,
+              :description => "#{BASE_REPO_URL}/#{filename}"
+    notifies :run, "execute[yum-makecache-#{filename}]", :immediately
+    notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
+  end
+
+  # get the metadata for this repo only
+  execute "yum-makecache-#{filename}" do
+    command "yum -q makecache -y --disablerepo=* --enablerepo=#{filename}"
+    action :nothing
+  end
+
+  # reload internal Chef yum cache
+  ruby_block "yum-cache-reload-#{filename}" do
+    block { Chef::Provider::Package::Yum::YumCache.instance.reload }
+    action :nothing
   end
 end
 
 def install_gem
   name     = new_resource.name
-  repo_url = URI("https://packagecloud.io/#{name}/")
+  repo_url = URI("#{BASE_REPO_URL}/#{name}/")
 
   set_read_token(repo_url, nil)
 
