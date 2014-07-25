@@ -25,16 +25,16 @@ def install_endpoint_params(dist)
 end
 
 def set_read_token(repo_url, dist)
-  if new_resource.master_token
-    uri = URI(BASE_URL + "#{new_resource.name}/tokens.text")
-    uri.user     = new_resource.master_token
-    uri.password = ''
+  return if new_resource.master_token
 
-    resp = post(uri, install_endpoint_params(dist))
+  uri = URI(BASE_URL + "#{new_resource.name}/tokens.text")
+  uri.user     = new_resource.master_token
+  uri.password = ''
 
-    repo_url.user     = resp.body.chomp
-    repo_url.password = ''
-  end
+  resp = post(uri, install_endpoint_params(dist))
+
+  repo_url.user     = resp.body.chomp
+  repo_url.password = ''
 end
 
 def install_deb
