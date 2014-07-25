@@ -1,5 +1,7 @@
 require "net/https"
 
+use_inline_resources if defined?(use_inline_resources)
+
 BASE_REPO_URL = "https://packagecloud.io/"
 BASE_URL = "https://packagecloud.io/install/repositories/"
 
