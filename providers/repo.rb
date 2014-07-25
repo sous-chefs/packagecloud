@@ -1,17 +1,17 @@
-require "net/https"
+require 'net/https'
 
 use_inline_resources if defined?(use_inline_resources)
 
-BASE_REPO_URL = "https://packagecloud.io/"
-BASE_URL = "https://packagecloud.io/install/repositories/"
+BASE_REPO_URL = 'https://packagecloud.io/'
+BASE_URL = 'https://packagecloud.io/install/repositories/'
 
 action :add do
   case new_resource.type
-  when "deb"
+  when 'deb'
     install_deb
-  when "rpm"
+  when 'rpm'
     install_rpm
-  when "gem"
+  when 'gem'
     install_gem
   else
     raise "#{new_resource.type} is an unknown package type."
@@ -19,40 +19,40 @@ action :add do
 end
 
 def install_endpoint_params(dist)
-  {:os   => node[:platform],
-   :dist => dist,
-   :name => node[:fqdn]}
+  { :os   => node[:platform],
+    :dist => dist,
+    :name => node[:fqdn] }
 end
 
 def set_read_token(repo_url, dist)
   if new_resource.master_token
     uri = URI(BASE_URL + "#{new_resource.name}/tokens.text")
     uri.user     = new_resource.master_token
-    uri.password = ""
+    uri.password = ''
 
     resp = post(uri, install_endpoint_params(dist))
 
     repo_url.user     = resp.body.chomp
-    repo_url.password = ""
+    repo_url.password = ''
   end
 end
 
 def install_deb
   name     = new_resource.name
-  filename = name.sub("/", "_")
+  filename = name.sub('/', '_')
   repo_url = URI("#{BASE_REPO_URL}/#{name}/#{node['platform']}/")
 
-  package "apt-transport-https"
+  package 'apt-transport-https'
 
   set_read_token(repo_url, node['lsb']['codename'])
 
   apt_repository filename do
-    uri          repo_url.to_s
-    deb_src      true
-    distribution node["lsb"]["codename"]
-    components   ["main"]
-    keyserver    "pgp.mit.edu"
-    key          "D59097AB"
+    uri repo_url.to_s
+    deb_src true
+    distribution node['lsb']['codename']
+    components ['main']
+    keyserver 'pgp.mit.edu'
+    key 'D59097AB'
   end
 end
 
@@ -61,7 +61,7 @@ def rpm_base_url(dist)
 
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
-    base_url_endpoint.password = ""
+    base_url_endpoint.password = ''
   end
 
   URI(get(base_url_endpoint, install_endpoint_params(dist)).body.chomp)
@@ -69,17 +69,17 @@ end
 
 def install_rpm
   name     = new_resource.name
-  filename = name.sub("/", "_")
+  filename = name.sub('/', '_')
   dist     = node['platform_version']
   base_url = rpm_base_url(dist)
 
-  package "pygpgme"
+  package 'pygpgme'
 
   set_read_token(base_url, dist)
 
-  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud" do
+  remote_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud' do
     source "#{BASE_REPO_URL}/gpg.key"
-    mode "0644"
+    mode '0644'
   end
 
   template "/etc/yum.repos.d/#{filename}.repo" do
@@ -113,8 +113,8 @@ def install_gem
   set_read_token(repo_url, nil)
 
   execute "install packagecloud #{name} repo as gem source" do
-    command "gem source --add #{repo_url.to_s}"
-    not_if "gem source --list | grep #{repo_url.to_s}"
+    command "gem source --add #{repo_url}"
+    not_if "gem source --list | grep #{repo_url}"
   end
 end
 
