@@ -127,9 +127,7 @@ def post(uri, params)
   http = Net::HTTP.new(uri.hostname, uri.port)
   http.use_ssl = true
 
-  resp = http.start {|http|
-    http.request(req)
-  }
+  resp = http.start { |h|  h.request(req) }
 
   case resp
   when Net::HTTPSuccess
@@ -148,9 +146,7 @@ def get(uri, params)
   http = Net::HTTP.new(uri.hostname, uri.port)
   http.use_ssl = true
 
-  resp = http.start {|http|
-    http.request(req)
-  }
+  resp = http.start { |h| h.request(req) }
 
   case resp
   when Net::HTTPSuccess
