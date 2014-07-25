@@ -38,7 +38,7 @@ end
 def install_deb
   name     = new_resource.name
   filename = name.sub("/", "_")
-  repo_url = URI("#{BASE_REPO_URL}/#{name}/#{node[:platform]}/")
+  repo_url = URI("#{BASE_REPO_URL}/#{name}/#{node['platform']}/")
 
   package "apt-transport-https"
 
@@ -68,7 +68,7 @@ end
 def install_rpm
   name     = new_resource.name
   filename = name.sub("/", "_")
-  dist     = node[:platform_version]
+  dist     = node['platform_version']
   base_url = rpm_base_url(dist)
 
   package "pygpgme"
