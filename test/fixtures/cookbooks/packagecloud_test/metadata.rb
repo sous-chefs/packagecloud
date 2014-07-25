@@ -1,3 +1,3 @@
-name "packagecloud_test"
+name 'packagecloud_test'
 
-depends "packagecloud"
+depends 'packagecloud'
