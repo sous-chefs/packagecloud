@@ -1,5 +1,11 @@
-packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
+packagecloud_repo 'computology_public_deb' do
+  repository 'computology/packagecloud-cookbook-test-public'
   type 'deb'
+end
+
+packagecloud_repo 'computology_public_gem' do
+  repository 'computology/packagecloud-cookbook-test-public'
+  type 'gem'
 end
 
 package 'jake'
