@@ -7,4 +7,3 @@ long_description 'Installs/Configures packagecloud.io repositories.'
 version '0.0.7'
 
 depends 'apt'
-depends 'yum', '>= 3.0.0'

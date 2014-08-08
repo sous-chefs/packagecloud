@@ -48,12 +48,32 @@ def install_rpm
 
   package 'pygpgme'
 
-  yum_repository filename do
-    description "#{node['packagecloud']['base_repo_url']}/#{filename}"
-    baseurl read_token(base_url).to_s
-    gpgkey URI.join(node['packagecloud']['base_repo_url'], 'gpg.key').to_s
-    gpgcheck false
-    action :create
+  remote_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud' do
+    source URI.join(node['packagecloud']['base_repo_url'], 'gpg.key').to_s
+    mode '0644'
+  end
+
+  template "/etc/yum.repos.d/#{filename}.repo" do
+    source 'yum.erb'
+    cookbook 'packagecloud'
+    mode '0644'
+    variables :base_url    => read_token(base_url).to_s,
+              :name        => filename,
+              :description => "#{node['packagecloud']['base_repo_url']}/#{filename}"
+    notifies :run, "execute[yum-makecache-#{filename}]", :immediately
+    notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
+  end
+
+  # get the metadata for this repo only
+  execute "yum-makecache-#{filename}" do
+    command "yum -q makecache -y --disablerepo=* --enablerepo=#{filename}"
+    action :nothing
+  end
+
+  # reload internal Chef yum cache
+  ruby_block "yum-cache-reload-#{filename}" do
+    block { Chef::Provider::Package::Yum::YumCache.instance.reload }
+    action :nothing
   end
 end
 
