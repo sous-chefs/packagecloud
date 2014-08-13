@@ -4,6 +4,6 @@ maintainer_email 'joe@packagecloud.io'
 license 'Apache 2.0'
 description 'Installs/Configures packagecloud.io repositories.'
 long_description 'Installs/Configures packagecloud.io repositories.'
-version '0.0.8'
+version '0.0.9'
 
 depends 'apt'

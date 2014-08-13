@@ -4,6 +4,9 @@ This cookbook provides an LWRP for installing https://packagecloud.io repositori
 
 ## Usage
 
+Be sure to depend on `packagecloud` in `metadata.rb` so that the packagecloud
+resource will be loaded.
+
 For public repos:
 
 ```ruby
@@ -24,5 +27,4 @@ end
 Valid options for `type` include `deb`, `rpm`, and `gem`.
 
 ## Credits
-
-Written by James Golick, Computology, LLC.
+Computology, LLC.
