@@ -1,92 +1,65 @@
-require "net/https"
+include ::PackageCloud::Helper
 
-BASE_REPO_URL = "https://packagecloud.io/"
-BASE_URL = "https://packagecloud.io/install/repositories/"
+require 'uri'
+
+use_inline_resources if defined?(use_inline_resources)
 
 action :add do
   case new_resource.type
-  when "deb"
+  when 'deb'
     install_deb
-  when "rpm"
+  when 'rpm'
     install_rpm
-  when "gem"
+  when 'gem'
     install_gem
   else
     raise "#{new_resource.type} is an unknown package type."
   end
 end
 
-def install_endpoint_params(dist)
-  {:os   => node[:platform],
-   :dist => dist,
-   :name => node[:fqdn]}
-end
-
-def set_read_token(repo_url, dist)
-  if new_resource.master_token
-    uri = URI(BASE_URL + "#{new_resource.name}/tokens.text")
-    uri.user     = new_resource.master_token
-    uri.password = ""
-
-    resp = post(uri, install_endpoint_params(dist))
-
-    repo_url.user     = resp.body.chomp
-    repo_url.password = ""
-  end
-end
-
 def install_deb
-  name     = new_resource.name
-  filename = name.sub("/", "_")
-  repo_url = URI("#{BASE_REPO_URL}/#{name}/#{node[:platform]}/")
+  repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/', node['platform'])
 
-  package "apt-transport-https"
+  Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
-  set_read_token(repo_url, node['lsb']['codename'])
+  package 'apt-transport-https'
 
   apt_repository filename do
-    uri          repo_url.to_s
-    deb_src      true
-    distribution node["lsb"]["codename"]
-    components   ["main"]
-    keyserver    "pgp.mit.edu"
-    key          "D59097AB"
+    uri read_token(repo_url).to_s
+    deb_src true
+    distribution node['lsb']['codename']
+    components ['main']
+    keyserver 'pgp.mit.edu'
+    key 'D59097AB'
   end
-end
-
-def rpm_base_url(dist)
-  base_url_endpoint = URI(BASE_URL + "#{new_resource.name}/rpm_base_url")
-
-  if new_resource.master_token
-    base_url_endpoint.user     = new_resource.master_token
-    base_url_endpoint.password = ""
-  end
-
-  URI(get(base_url_endpoint, install_endpoint_params(dist)).body.chomp)
 end
 
 def install_rpm
-  name     = new_resource.name
-  filename = name.sub("/", "_")
-  dist     = node[:platform_version]
-  base_url = rpm_base_url(dist)
+  base_url_endpoint = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', 'rpm_base_url')
 
-  package "pygpgme"
+  if new_resource.master_token
+    base_url_endpoint.user     = new_resource.master_token
+    base_url_endpoint.password = ''
+  end
 
-  set_read_token(base_url, dist)
+  base_url = URI(get(base_url_endpoint, install_endpoint_params).body.chomp)
 
-  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud" do
-    source "#{BASE_REPO_URL}/gpg.key"
-    mode "0644"
+  Chef::Log.debug("#{new_resource.name} rpm base url = #{base_url}")
+
+  package 'pygpgme'
+
+  remote_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud' do
+    source URI.join(node['packagecloud']['base_repo_url'], 'gpg.key').to_s
+    mode '0644'
   end
 
   template "/etc/yum.repos.d/#{filename}.repo" do
     source 'yum.erb'
     cookbook 'packagecloud'
     mode '0644'
-    variables :base_url    => base_url,
+    variables :base_url    => read_token(base_url).to_s,
               :name        => filename,
-              :description => "#{BASE_REPO_URL}/#{filename}"
+              :description => "#{node['packagecloud']['base_repo_url']}/#{filename}"
     notifies :run, "execute[yum-makecache-#{filename}]", :immediately
     notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
   end
@@ -105,55 +78,43 @@ def install_rpm
 end
 
 def install_gem
-  name     = new_resource.name
-  repo_url = URI("#{BASE_REPO_URL}/#{name}/")
+  repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/')
 
-  set_read_token(repo_url, nil)
+  read_token(repo_url)
 
-  execute "install packagecloud #{name} repo as gem source" do
-    command "gem source --add #{repo_url.to_s}"
-    not_if "gem source --list | grep #{repo_url.to_s}"
+  execute "install packagecloud #{new_resource.name} repo as gem source" do
+    command "gem source --add #{repo_url}"
+    not_if "gem source --list | grep #{repo_url}"
   end
 end
 
-def post(uri, params)
-  req           = Net::HTTP::Post.new(uri.request_uri)
-  req.form_data = params
+def read_token(repo_url)
+  return repo_url unless new_resource.master_token
 
-  req.basic_auth uri.user, uri.password if uri.user
+  uri = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', 'tokens.text')
+  uri.user     = new_resource.master_token
+  uri.password = ''
 
-  http = Net::HTTP.new(uri.hostname, uri.port)
-  http.use_ssl = true
+  resp = post(uri, install_endpoint_params)
 
-  resp = http.start {|http|
-    http.request(req)
-  }
+  Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-  case resp
-  when Net::HTTPSuccess
-    resp
-  else
-    raise resp.inspect
-  end
+  repo_url.user     = resp.body.chomp
+  repo_url.password = ''
+  repo_url
 end
 
-def get(uri, params)
-  uri.query     = URI.encode_www_form(params)
-  req           = Net::HTTP::Get.new(uri.request_uri)
+def install_endpoint_params
+  dist = value_for_platform_family(
+    'debian' => node['lsb']['codename'],
+    ['rhel', 'fedora'] => node['platform_version'],
+  )
 
-  req.basic_auth uri.user, uri.password if uri.user
+  { :os   => node['platform'],
+    :dist => dist,
+    :name => node['fqdn'] }
+end
 
-  http = Net::HTTP.new(uri.hostname, uri.port)
-  http.use_ssl = true
-
-  resp = http.start {|http|
-    http.request(req)
-  }
-
-  case resp
-  when Net::HTTPSuccess
-    resp
-  else
-    raise resp.inspect
-  end
+def filename
+  new_resource.name.gsub(/[^0-9A-z.\-]/, '_')
 end
