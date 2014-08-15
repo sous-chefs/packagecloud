@@ -46,7 +46,26 @@ def install_rpm
 
   Chef::Log.debug("#{new_resource.name} rpm base url = #{base_url}")
 
-  package 'pygpgme'
+  package 'pygpgme' do
+    ignore_failure true
+  end
+
+  log 'pygpgme_warning' do
+    message 'The pygpgme package could not be installed. This means GPG verification is not possible for any RPM installed on your system. ' \
+            'To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. ' \
+            'More information: https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F and https://github.com/opscode-cookbooks/yum-epel'
+
+    level :warn
+    not_if 'rpm -qa | grep -qw pygpgme'
+  end
+
+  ruby_block 'disable repo_gpgcheck if no pygpgme' do
+    block do
+      template = run_context.resource_collection.find(:template => "/etc/yum.repos.d/#{filename}.repo")
+      template.variables[:repo_gpgcheck] = 0
+    end
+    not_if 'rpm -qa | grep -qw pygpgme'
+  end
 
   remote_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud' do
     source URI.join(node['packagecloud']['base_repo_url'], 'gpg.key').to_s
@@ -57,9 +76,10 @@ def install_rpm
     source 'yum.erb'
     cookbook 'packagecloud'
     mode '0644'
-    variables :base_url    => read_token(base_url).to_s,
-              :name        => filename,
-              :description => "#{node['packagecloud']['base_repo_url']}/#{filename}"
+    variables :base_url      => read_token(base_url).to_s,
+              :name          => filename,
+              :repo_gpgcheck => 1,
+              :description   => "#{node['packagecloud']['base_repo_url']}/#{filename}"
     notifies :run, "execute[yum-makecache-#{filename}]", :immediately
     notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
   end
