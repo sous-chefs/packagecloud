@@ -79,7 +79,7 @@ def install_rpm
     variables :base_url      => read_token(base_url).to_s,
               :name          => filename,
               :repo_gpgcheck => 1,
-              :description   => "#{node['packagecloud']['base_repo_url']}/#{filename}"
+              :description   => filename
     notifies :run, "execute[yum-makecache-#{filename}]", :immediately
     notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
   end
@@ -119,9 +119,13 @@ def read_token(repo_url)
 
   Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-  repo_url.user     = resp.body.chomp
-  repo_url.password = ''
-  repo_url
+  if platform_family?('rhel') && node.platform_version.to_i == 5
+    repo_url
+  else
+    repo_url.user     = resp.body.chomp
+    repo_url.password = ''
+    repo_url
+  end
 end
 
 def install_endpoint_params
