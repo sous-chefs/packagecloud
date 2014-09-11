@@ -8,5 +8,5 @@ priority=<%=@priority %>
 gpgcheck=0
 enabled=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud
-sslverify=1
+sslverify=<%= @ssl_verify ? 1 : 0 %>
 sslcacert=/etc/pki/tls/certs/ca-bundle.crt
