@@ -24,13 +24,23 @@ def install_deb
 
   package 'apt-transport-https'
 
-  apt_repository filename do
-    uri read_token(repo_url).to_s
-    deb_src true
-    distribution node['lsb']['codename']
-    components ['main']
-    keyserver 'pgp.mit.edu'
-    key 'D59097AB'
+  if !new_resource.gpg_key_url.nil?
+    apt_repository filename do
+      uri read_token(repo_url).to_s
+      deb_src true
+      distribution node['lsb']['codename']
+      components ['main']
+      key new_resource.gpg_key_url
+    end
+  else
+    apt_repository filename do
+      uri read_token(repo_url).to_s
+      deb_src true
+      distribution node['lsb']['codename']
+      components ['main']
+      keyserver new_resource.gpg_keyserver
+      key new_resource.gpg_key
+    end
   end
 end
 
