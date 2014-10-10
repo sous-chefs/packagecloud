@@ -89,7 +89,9 @@ def install_rpm
     variables :base_url      => read_token(base_url).to_s,
               :name          => filename,
               :repo_gpgcheck => 1,
-              :description   => filename
+              :description   => filename,
+              :priority      => new_resource.priority
+ 
     notifies :run, "execute[yum-makecache-#{filename}]", :immediately
     notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
   end
