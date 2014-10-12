@@ -4,18 +4,42 @@ driver_config:
   require_chef_omnibus: true
 
 platforms:
+- name: ubuntu-10.04
+  driver_config:
+    box: opscode-ubuntu-10.04
+    box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-10.04_provisionerless.box
+  run_list:
+    - recipe[packagecloud_test::lucid_deps]
+    - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::rubygems_private]
+
 - name: ubuntu-12.04
   driver_config:
     box: opscode-ubuntu-12.04
     box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_provisionerless.box
   run_list:
+    - recipe[packagecloud_test::precise_deps]
     - recipe[packagecloud_test::deb]
     - recipe[packagecloud_test::rubygems_private]
+
+- name: ubuntu-14.04
+  driver_config:
+    box: opscode-ubuntu-14.04
+    box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-14.04_provisionerless.box
+  run_list:
+    - recipe[packagecloud_test::trusty_deps]
+    - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::rubygems]
 
 - name: centos-6.5
   run_list:
     - recipe[packagecloud_test::rpm]
     - recipe[packagecloud_test::rubygems]
+
+- name: centos-7.0
+  run_list:
+    - recipe[packagecloud_test::rpm]
+    - recipe[packagecloud_test::rubygems_private]
 
 suites:
 - name: default

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-path = os[:family].downcase == 'ubuntu' ? '/usr/local/bin/jakedotrb' : '/usr/bin/jakedotrb'
+path = '/usr/local/bin/jakedotrb'
 
 describe command("ls #{path}") do
   its(:exit_status) { should eq 0 }
