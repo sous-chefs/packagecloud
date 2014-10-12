@@ -24,23 +24,28 @@ def install_deb
 
   package 'apt-transport-https'
 
-  if !new_resource.gpg_key_url.nil?
-    apt_repository filename do
-      uri read_token(repo_url).to_s
-      deb_src true
-      distribution node['lsb']['codename']
-      components ['main']
-      key new_resource.gpg_key_url
-    end
-  else
-    apt_repository filename do
-      uri read_token(repo_url).to_s
-      deb_src true
-      distribution node['lsb']['codename']
-      components ['main']
-      keyserver new_resource.gpg_keyserver
-      key new_resource.gpg_key
-    end
+  template "/etc/apt/sources.list.d/#{filename}.list" do
+    source 'apt.erb'
+    cookbook 'packagecloud'
+    mode '0644'
+    variables :base_url     => read_token(repo_url).to_s,
+              :distribution => node['lsb']['codename'],
+              :component    => 'main'
+
+    notifies :run, "execute[apt-key-add-#{filename}]", :immediately
+    notifies :run, "execute[apt-get-update-#{filename}]", :immediately
+  end
+
+  execute "apt-key-add-#{filename}" do
+    command "wget -qO - https://packagecloud.io/gpg.key | apt-key add -"
+    action :nothing
+  end
+
+  execute "apt-get-update-#{filename}" do
+    command "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/#{filename}.list\"" \
+            " -o Dir::Etc::sourceparts=\"-\"" \
+            " -o APT::Get::List-Cleanup=\"0\""
+    action :nothing
   end
 end
 
@@ -131,7 +136,7 @@ def read_token(repo_url)
 
   Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-  if platform_family?('rhel') && node.platform_version.to_i == 5
+  if platform_family?('rhel') && node['platform_version'].to_i == 5
     repo_url
   else
     repo_url.user     = resp.body.chomp
@@ -145,6 +150,11 @@ def install_endpoint_params
     'debian' => node['lsb']['codename'],
     ['rhel', 'fedora'] => node['platform_version'],
   )
+
+  if node['fqdn'].nil?
+    Chef::Log.fatal("This node's fqdn is set to nil, so a read token cannot be issued!" \
+                    "Please change your fqdn settings.")
+  end
 
   { :os   => node['platform'],
     :dist => dist,
