@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rake'
 gem 'berkshelf', '~> 3.1.4'
+gem 'kitchen-ec2'
 
 group :test do
   gem 'foodcritic', '~> 4.0.0'
