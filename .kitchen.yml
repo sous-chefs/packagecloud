@@ -75,5 +75,5 @@ platforms:
 
 suites:
 - name: default
-run_list:
-attributes: {}
+  run_list:
+  attributes: {}
