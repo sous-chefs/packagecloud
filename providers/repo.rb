@@ -95,6 +95,7 @@ def install_rpm
               :name          => filename,
               :repo_gpgcheck => 1,
               :description   => filename,
+              :ssl_verify    => new_resource.ssl_verify,
               :priority      => new_resource.priority
  
     notifies :run, "execute[yum-makecache-#{filename}]", :immediately
