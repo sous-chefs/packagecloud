@@ -24,7 +24,32 @@ packagecloud_repo "computology/packagecloud-cookbook-test-private" do
 end
 ```
 
-Valid options for `type` include `deb`, `rpm`, and `gem`.
+### Deb Repositories
+
+If a repository publishes packages for only certain codenames, for
+example Ubuntu 10.04 and 12.04, and you're using a platform that isn't
+supported, such as Ubuntu 14.04, you can specify a codename to use by
+default, as "YOLO."
+
+```ruby
+packagecloud_repo 'chef/stable' do
+  supported_codenames ['lucid', 'precise']
+  default_codename 'lucid'
+end
+```
+
+If you want to specify a particular codename no matter what, just use
+`default_codename` without supported codenames.
+
+```ruby
+packagecloud_repo 'basho/riak' do
+  default_codename 'lucid'
+end
+```
+
+Valid options for `type` include `deb`, `rpm`, and `gem`. The provider
+will use the `node['packagecloud']['default_type']` attribute, which
+is determined by platform.
 
 ## Interactions with other cookbooks
 

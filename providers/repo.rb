@@ -19,6 +19,11 @@ end
 
 def install_deb
   repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/', node['platform'])
+  codename = if using_supported_codenames?
+               distro_codename
+             else
+               new_resource.default_codename || node['lsb']['codename']
+             end
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
@@ -29,7 +34,7 @@ def install_deb
     cookbook 'packagecloud'
     mode '0644'
     variables :base_url     => read_token(repo_url).to_s,
-              :distribution => node['lsb']['codename'],
+              :distribution => codename,
               :component    => 'main'
 
     notifies :run, "execute[apt-key-add-#{filename}]", :immediately
@@ -96,7 +101,7 @@ def install_rpm
               :repo_gpgcheck => 1,
               :description   => filename,
               :priority      => new_resource.priority
- 
+
     notifies :run, "execute[yum-makecache-#{filename}]", :immediately
     notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
   end
@@ -163,4 +168,16 @@ end
 
 def filename
   new_resource.name.gsub(/[^0-9A-z.\-]/, '_')
+end
+
+def using_supported_codenames?
+  new_resource.supported_codenames.length > 0 && new_resource.default_codename
+end
+
+def distro_codename
+  if new_resource.supported_codenames.include?(node['lsb']['codename'])
+    node['lsb']['codename']
+  else
+    new_resource.default_codename
+  end
 end
