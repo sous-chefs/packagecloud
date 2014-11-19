@@ -116,8 +116,8 @@ end
 
 def install_gem
   repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/')
+  repo_url = read_token(repo_url, true).to_s
 
-  read_token(repo_url)
 
   execute "install packagecloud #{new_resource.name} repo as gem source" do
     command "gem source --add #{repo_url}"
@@ -125,7 +125,7 @@ def install_gem
   end
 end
 
-def read_token(repo_url)
+def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
   uri = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', 'tokens.text')
@@ -136,7 +136,7 @@ def read_token(repo_url)
 
   Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-  if platform_family?('rhel') && node['platform_version'].to_i == 5
+  if is_rhel5? && !gems
     repo_url
   else
     repo_url.user     = resp.body.chomp
@@ -163,4 +163,8 @@ end
 
 def filename
   new_resource.name.gsub(/[^0-9A-z.\-]/, '_')
+end
+
+def is_rhel5?
+  platform_family?('rhel') && node['platform_version'].to_i == 5
 end

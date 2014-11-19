@@ -44,7 +44,7 @@ platforms:
   run_list:
     - recipe[packagecloud_test::epel5]
     - recipe[packagecloud_test::rpm]
-    - recipe[packagecloud_test::rubygems]
+    - recipe[packagecloud_test::rubygems_private]
 
 - name: centos-6.5
   run_list:
