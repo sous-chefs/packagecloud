@@ -24,6 +24,14 @@ packagecloud_repo "computology/packagecloud-cookbook-test-private" do
 end
 ```
 
+For onpremise customers:
+Override these attributes:
+```
+  "packagecloud": {
+    "base_repo_url": "https://packagecloud.local:9192"
+  }
+```
+
 Valid options for `type` include `deb`, `rpm`, and `gem`.
 
 ## Interactions with other cookbooks
