@@ -24,7 +24,7 @@ packagecloud_repo "computology/packagecloud-cookbook-test-private" do
 end
 ```
 
-For onpremise customers:
+For packagecloud:enterprise users:
 Override these attributes:
 ```
   "packagecloud": {
