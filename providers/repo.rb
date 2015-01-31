@@ -37,7 +37,7 @@ def install_deb
   end
 
   execute "apt-key-add-#{filename}" do
-    command "wget -qO - https://packagecloud.io/gpg.key | apt-key add -"
+    command "wget -qO - #{node['packagecloud']['gpg_key_url']} | apt-key add -"
     action :nothing
   end
 
@@ -83,7 +83,7 @@ def install_rpm
   end
 
   remote_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud' do
-    source URI.join(node['packagecloud']['base_repo_url'], 'gpg.key').to_s
+    source node['packagecloud']['gpg_key_url']
     mode '0644'
   end
 
