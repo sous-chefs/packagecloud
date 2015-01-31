@@ -18,7 +18,7 @@ action :add do
 end
 
 def install_deb
-  repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/', node['platform'])
+  repo_url = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', node['platform'])
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
@@ -50,7 +50,7 @@ def install_deb
 end
 
 def install_rpm
-  base_url_endpoint = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', 'rpm_base_url')
+  base_url_endpoint = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/', 'rpm_base_url')
 
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
@@ -115,7 +115,7 @@ def install_rpm
 end
 
 def install_gem
-  repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/')
+  repo_url = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/')
   repo_url = read_token(repo_url, true).to_s
 
 
@@ -128,7 +128,7 @@ end
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
-  uri = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', 'tokens.text')
+  uri = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/', 'tokens.text')
   uri.user     = new_resource.master_token
   uri.password = ''
 
