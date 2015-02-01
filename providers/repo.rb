@@ -52,7 +52,7 @@ end
 def install_rpm
   base_url_endpoint = construct_uri_with_options({base_url: node['packagecloud']['base_repo_url'], repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
-  gpg_hostname = node.hostname[0..30]
+  gpg_hostname = URI.parse(node['packagecloud']['base_url']).host.gsub!('.', '_')
   
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
