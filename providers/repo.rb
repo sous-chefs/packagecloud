@@ -52,6 +52,8 @@ end
 def install_rpm
   base_url_endpoint = construct_uri_with_options({base_url: node['packagecloud']['base_repo_url'], repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
+  gpg_hostname = node.hostname[0..30]
+  
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
     base_url_endpoint.password = ''
@@ -82,7 +84,7 @@ def install_rpm
     not_if 'rpm -qa | grep -qw pygpgme'
   end
 
-  remote_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud' do
+  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_hostname}" do
     source node['packagecloud']['gpg_key_url']
     mode '0644'
   end
@@ -92,6 +94,7 @@ def install_rpm
     cookbook 'packagecloud'
     mode '0644'
     variables :base_url      => read_token(base_url).to_s,
+              :hostname      => gpg_hostname,
               :name          => filename,
               :repo_gpgcheck => 1,
               :description   => filename,
