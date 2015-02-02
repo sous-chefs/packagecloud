@@ -28,7 +28,7 @@ For packagecloud:enterprise users:
 Override these attributes:
 ```
   "packagecloud": {
-    "base_repo_url": "https://packagecloud.local:9192"
+    "base_url": "https://packagecloud.local:9192"
   }
 ```
 
