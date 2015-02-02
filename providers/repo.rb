@@ -18,7 +18,7 @@ action :add do
 end
 
 def install_deb
-  repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/', node['platform'])
+  repo_url = construct_uri_with_options({base_url: node['packagecloud']['base_url'], repo: new_resource.repository, endpoint: node['platform']})
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
@@ -37,7 +37,7 @@ def install_deb
   end
 
   execute "apt-key-add-#{filename}" do
-    command "wget -qO - https://packagecloud.io/gpg.key | apt-key add -"
+    command "wget -qO - #{node['packagecloud']['gpg_key_url']} | apt-key add -"
     action :nothing
   end
 
@@ -50,8 +50,10 @@ def install_deb
 end
 
 def install_rpm
-  base_url_endpoint = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', 'rpm_base_url')
+  base_url_endpoint = construct_uri_with_options({base_url: node['packagecloud']['base_repo_url'], repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
+  gpg_filename = URI.parse(node['packagecloud']['base_url']).host.gsub!('.', '_')
+  
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
     base_url_endpoint.password = ''
@@ -82,8 +84,8 @@ def install_rpm
     not_if 'rpm -qa | grep -qw pygpgme'
   end
 
-  remote_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-packagecloud' do
-    source URI.join(node['packagecloud']['base_repo_url'], 'gpg.key').to_s
+  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
+    source node['packagecloud']['gpg_key_url']
     mode '0644'
   end
 
@@ -92,6 +94,7 @@ def install_rpm
     cookbook 'packagecloud'
     mode '0644'
     variables :base_url      => read_token(base_url).to_s,
+              :gpg_filename  => gpg_filename,
               :name          => filename,
               :repo_gpgcheck => 1,
               :description   => filename,
@@ -115,7 +118,7 @@ def install_rpm
 end
 
 def install_gem
-  repo_url = URI.join(node['packagecloud']['base_repo_url'], new_resource.repository + '/')
+  repo_url = construct_uri_with_options({base_url: node['packagecloud']['base_url'], repo: new_resource.repository})
   repo_url = read_token(repo_url, true).to_s
 
 
@@ -128,7 +131,7 @@ end
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
-  uri = URI.join(node['packagecloud']['base_url'], new_resource.repository + '/', 'tokens.text')
+  uri = construct_uri_with_options({base_url: node['packagecloud']['base_repo_url'], repo: new_resource.repository, endpoint: 'tokens.text'})
   uri.user     = new_resource.master_token
   uri.password = ''
 
@@ -167,4 +170,24 @@ end
 
 def is_rhel5?
   platform_family?('rhel') && node['platform_version'].to_i == 5
+end
+
+def construct_uri_with_options(options)
+  required_options = [:base_url, :repo]
+
+  required_options.each do |opt|
+    if !options[opt]
+      raise ArgumentError,
+            "A required option :#{opt} was not specified"
+    end
+  end
+    
+  options[:base_url] = append_trailing_slash(options[:base_url])
+  options[:repo]     = append_trailing_slash(options[:repo])
+  
+  URI.join(options.delete(:base_url), options.inject([]) {|mem, opt| mem << opt[1]}.join)
+end
+
+def append_trailing_slash(str)
+  str.end_with?("/") ? str : str << "/"
 end
