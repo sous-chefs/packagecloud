@@ -93,13 +93,14 @@ def install_rpm
     source 'yum.erb'
     cookbook 'packagecloud'
     mode '0644'
-    variables :base_url      => read_token(base_url).to_s,
+    variables :base_url        => read_token(base_url).to_s,
               :gpg_filename  => gpg_filename,
-              :name          => filename,
-              :repo_gpgcheck => 1,
-              :description   => filename,
-              :priority      => new_resource.priority
- 
+              :name            => filename,
+              :repo_gpgcheck   => 1,
+              :description     => filename,
+              :priority        => new_resource.priority,
+              :metadata_expire => new_resource.metadata_expire
+
     notifies :run, "execute[yum-makecache-#{filename}]", :immediately
     notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
   end
