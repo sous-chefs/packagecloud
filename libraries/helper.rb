@@ -6,7 +6,7 @@ module PackageCloud
       uri.query = URI.encode_www_form(params)
       req       = Net::HTTP::Get.new(uri.request_uri)
       
-      resp = http_request(req)
+      resp = http_request(uri, req)
       
       case resp
       when Net::HTTPSuccess
@@ -22,7 +22,7 @@ module PackageCloud
 
       req.basic_auth uri.user, uri.password if uri.user
       
-      resp = http_request(req)
+      resp = http_request(uri, req)
       
       case resp
       when Net::HTTPSuccess
@@ -32,10 +32,10 @@ module PackageCloud
       end
     end
     
-    def http_request(request)
+    def http_request(uri, request)
       if ENV['https_proxy'] || ENV['http_proxy']
         proxy_url = ENV['https_proxy'] || ENV['http_proxy']
-        proxy_uri = URI.parse(proxy)
+        proxy_uri = URI.parse(proxy_url)
         proxy     = Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port, proxy_uri.user, proxy_uri.password)
 
         response = proxy.start(uri.host, :use_ssl => proxy_uri.scheme == 'https') do |http|
