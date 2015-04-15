@@ -19,7 +19,7 @@ end
 
 def install_deb
   base_url = new_resource.base_url
-  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository, endpoint: node['platform']})
+  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository, endpoint: node['packagecloud']['deb']['endpoint']})
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
@@ -53,20 +53,18 @@ def install_deb
 end
 
 def install_rpm
-  given_base_url = new_resource.base_url
-
-  base_repo_url = ::File.join(given_base_url, node['packagecloud']['base_repo_path'])
-
-  base_url_endpoint = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
-
-  gpg_filename = URI.parse(base_repo_url).host.gsub!('.', '_')
+  given_base_url    = new_resource.base_url
+  base_repo_url     = ::File.join(given_base_url, node['packagecloud']['base_repo_path'])
+  base_url_endpoint = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: node['packagecloud']['rpm']['endpoint']})
+  gpg_filename      = URI.parse(base_repo_url).host.gsub!('.', '_')
 
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
     base_url_endpoint.password = ''
   end
 
-  base_url = URI(get(base_url_endpoint, install_endpoint_params).body.chomp)
+  config_file = get(base_url_endpoint, install_endpoint_params).body.chomp
+  base_url    = URI.parse(config_file.split("\n").select{ |s| s =~ /baseurl/ }[0].split("=")[1])
 
   Chef::Log.debug("#{new_resource.name} rpm base url = #{base_url}")
 
