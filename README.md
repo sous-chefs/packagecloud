@@ -24,12 +24,13 @@ packagecloud_repo "computology/packagecloud-cookbook-test-private" do
 end
 ```
 
-For packagecloud:enterprise users:
-Override these attributes:
+For packagecloud:enterprise users, add `base_url` to your resource:
 ```
-  "packagecloud": {
-    "base_url": "https://packagecloud.local:9192"
-  }
+packagecloud_repo "computology/packagecloud-cookbook-test-private" do
+  base_url "https://packages.example.com"
+  type "deb"
+  master_token "762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9"
+end
 ```
 
 Valid options for `type` include `deb`, `rpm`, and `gem`.
