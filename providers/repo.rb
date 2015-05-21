@@ -18,7 +18,7 @@ action :add do
 end
 
 def install_deb
-  base_url = new_resource.base_url || 'https://packagecloud.io'
+  base_url = new_resource.base_url
   repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository, endpoint: node['platform']})
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
@@ -37,8 +37,10 @@ def install_deb
     notifies :run, "execute[apt-get-update-#{filename}]", :immediately
   end
 
+  gpg_key_url = "#{base_url}#{node['packagecloud']['gpg_key_path']}"
+
   execute "apt-key-add-#{filename}" do
-    command "wget -qO - #{node['packagecloud']['gpg_key_url']} | apt-key add -"
+    command "wget -qO - #{gpg_key_url} | apt-key add -"
     action :nothing
   end
 
@@ -51,7 +53,7 @@ def install_deb
 end
 
 def install_rpm
-  given_base_url = new_resource.base_url || 'https://packagecloud.io'
+  given_base_url = new_resource.base_url
   base_url_endpoint = construct_uri_with_options({base_url: given_base_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
   gpg_filename = URI.parse(given_base_url).host.gsub!('.', '_')
@@ -121,7 +123,7 @@ def install_rpm
 end
 
 def install_gem
-  base_url = new_resource.base_url || 'https://packagecloud.io'
+  base_url = new_resource.base_url
   repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository})
   repo_url = read_token(repo_url, true).to_s
 
@@ -135,11 +137,11 @@ end
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
-  base_url = new_resource.base_url || 'https://packagecloud.io/'
+  base_url = new_resource.base_url
 
-  base_repo_url = "#{base_url}/#{options['base_repo_path']}" #TODO sanitize and ensure /
+  base_repo_url = "#{base_url}/#{node['packagecloud']['base_repo_path']}" #TODO sanitize and ensure /
 
-  uri = construct_uri_with_options({base_repo_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text'})
+  uri = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text'})
   uri.user     = new_resource.master_token
   uri.password = ''
 
