@@ -54,7 +54,10 @@ end
 
 def install_rpm
   given_base_url = new_resource.base_url
-  base_url_endpoint = construct_uri_with_options({base_url: given_base_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
+
+  base_repo_url = "#{given_base_url}#{node['packagecloud']['base_repo_path']}" #TODO sanitize and ensure /
+
+  base_url_endpoint = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
   gpg_filename = URI.parse(given_base_url).host.gsub!('.', '_')
 
