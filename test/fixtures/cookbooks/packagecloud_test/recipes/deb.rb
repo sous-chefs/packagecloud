@@ -3,11 +3,6 @@ packagecloud_repo 'computology_public_deb' do
   type 'deb'
 end
 
-packagecloud_repo 'computology_public_gem' do
-  repository 'computology/packagecloud-cookbook-test-public'
-  type 'gem'
-end
-
 package 'jake'
 
 packagecloud_repo 'computology_private' do
