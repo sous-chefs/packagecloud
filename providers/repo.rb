@@ -37,7 +37,7 @@ def install_deb
     notifies :run, "execute[apt-get-update-#{filename}]", :immediately
   end
 
-  gpg_key_url = File.join(base_url, node['packagecloud']['gpg_key_path'])
+  gpg_key_url = ::File.join(base_url, node['packagecloud']['gpg_key_path'])
 
   execute "apt-key-add-#{filename}" do
     command "wget -qO - #{gpg_key_url} | apt-key add -"
@@ -55,7 +55,7 @@ end
 def install_rpm
   given_base_url = new_resource.base_url
 
-  base_repo_url = File.join(given_base_url, node['packagecloud']['base_repo_path'])
+  base_repo_url = ::File.join(given_base_url, node['packagecloud']['base_repo_path'])
 
   base_url_endpoint = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
@@ -92,7 +92,7 @@ def install_rpm
   end
 
   remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
-    source File.join(given_base_url, node['packagecloud']['gpg_key_path'])
+    source ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
     mode '0644'
   end
 
@@ -143,7 +143,7 @@ def read_token(repo_url, gems=false)
 
   base_url = new_resource.base_url
 
-  base_repo_url = File.join(base_url, node['packagecloud']['base_repo_path'])
+  base_repo_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
 
   uri = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text'})
   uri.user     = new_resource.master_token
