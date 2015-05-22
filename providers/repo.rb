@@ -59,7 +59,7 @@ def install_rpm
 
   base_url_endpoint = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
-  gpg_filename = URI.parse(given_base_url).host.gsub!('.', '_')
+  gpg_filename = URI.parse(base_repo_url).host.gsub!('.', '_')
 
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
@@ -92,7 +92,7 @@ def install_rpm
   end
 
   remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
-    source base_url + node['packagecloud']['gpg_key_path']
+    source "#{given_base_url}#{node['packagecloud']['gpg_key_path']}"
     mode '0644'
   end
 
@@ -127,6 +127,7 @@ end
 
 def install_gem
   base_url = new_resource.base_url
+
   repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository})
   repo_url = read_token(repo_url, true).to_s
 
