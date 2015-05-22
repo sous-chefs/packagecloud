@@ -25,6 +25,7 @@ end
 ```
 
 For packagecloud:enterprise users, add `base_url` to your resource:
+
 ```
 packagecloud_repo "computology/packagecloud-cookbook-test-private" do
   base_url "https://packages.example.com"
