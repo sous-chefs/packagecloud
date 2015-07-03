@@ -210,5 +210,5 @@ def construct_uri_with_options(options)
 end
 
 def append_trailing_slash(str)
-  str.end_with?("/") ? str : str << "/"
+  str.end_with?("/") ? str : str + "/"
 end
