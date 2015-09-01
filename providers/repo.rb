@@ -141,14 +141,16 @@ end
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
-  if node['fqdn'].nil?
-    Chef::Log.fatal("This node's fqdn is set to nil, so a read token cannot be issued!" \
-                    "Please change your fqdn settings.")
+  hostname = node['packagecloud']['hostname'] ||
+             node['fqdn'] ||
+             node['hostname']
+
+  if !hostname
+    raise("Can't determine hostname!  Set node['packagecloud']['hostname'] " \
+          "if it cannot be automatically determined by Ohai.")
   end
 
-  if node['packagecloud'][new_resource.repository].nil? ||
-     node['packagecloud']['hostname'] != node['fqdn']
-
+  if node['packagecloud'][new_resource.repository].nil?
     base_url = new_resource.base_url
 
     base_repo_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
@@ -157,11 +159,10 @@ def read_token(repo_url, gems=false)
     uri.user     = new_resource.master_token
     uri.password = ''
 
-    resp = post(uri, install_endpoint_params)
+    resp = post(uri, install_endpoint_params({hostname: hostname}))
 
     Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-    node.set['packagecloud']['hostname'] = node['fqdn']
     node.set['packagecloud'][new_resource.repository] = Mash.new(read_token:  resp.body.chomp)
   end
 
@@ -174,7 +175,7 @@ def read_token(repo_url, gems=false)
   end
 end
 
-def install_endpoint_params
+def install_endpoint_params(args={})
   dist = value_for_platform_family(
     'debian' => node['lsb']['codename'],
     ['rhel', 'fedora'] => node['platform_version'],
@@ -182,7 +183,7 @@ def install_endpoint_params
 
   { :os   => node['platform'],
     :dist => dist,
-    :name => node['fqdn'] }
+    :name => args[:hostname] }
 end
 
 def filename
