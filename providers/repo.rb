@@ -138,19 +138,36 @@ def install_gem
   end
 end
 
+### The hostname lookup chain is:
+### 1) node['packagecloud']['override_hostname']
+### 2) node['fqdn']
+### 3) node['hostname']
+### We persist this hostname result in node['packagecloud']['_stored_hostname']
+### between chef runs so that we can determine if a new read token should be issued
+### from the packagecloud API for new/changed hostnames. See #should_issue_read_token?
+def get_hostname
+  hostname = override_or_fqdn_or_hostname
+  if hostname.nil?
+    raise("Can't determine hostname!  Set node['packagecloud']['override_hostname'] " \
+          "if it cannot be automatically determined by Ohai.")
+  else
+    node.set['packagecloud']['_stored_hostname'] = hostname
+    hostname
+  end
+end
+
+def should_issue_read_token?
+  node['packagecloud'][new_resource.repository].nil? || node['packagecloud']['_stored_hostname'] != override_or_fqdn_or_hostname
+end
+
+def override_or_fqdn_or_hostname
+  node['packagecloud']['override_hostname'] || node['fqdn'] || node['hostname']
+end
+
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
-  hostname = node['packagecloud']['hostname'] ||
-             node['fqdn'] ||
-             node['hostname']
-
-  if !hostname
-    raise("Can't determine hostname!  Set node['packagecloud']['hostname'] " \
-          "if it cannot be automatically determined by Ohai.")
-  end
-
-  if node['packagecloud'][new_resource.repository].nil?
+  if should_issue_read_token?
     base_url = new_resource.base_url
 
     base_repo_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
@@ -159,7 +176,7 @@ def read_token(repo_url, gems=false)
     uri.user     = new_resource.master_token
     uri.password = ''
 
-    resp = post(uri, install_endpoint_params({hostname: hostname}))
+    resp = post(uri, install_endpoint_params({hostname: get_hostname}))
 
     Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
