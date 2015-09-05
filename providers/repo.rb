@@ -138,17 +138,45 @@ def install_gem
   end
 end
 
+### The hostname lookup chain is:
+### 1) node['packagecloud']['override_hostname']
+### 2) node['fqdn']
+### 3) node['hostname']
+### We persist this hostname result in node['packagecloud']['_stored_hostname']
+### between chef runs so that we can determine if a new read token should be issued
+### from the packagecloud API for new/changed hostnames. See #should_issue_read_token?
+def get_hostname
+  hostname = override_or_fqdn_or_hostname
+  if hostname.nil?
+    raise("Can't determine hostname!  Set node['packagecloud']['override_hostname'] " \
+          "if it cannot be automatically determined by Ohai.")
+  else
+    node.set['packagecloud']['_stored_hostname'] = hostname
+    hostname
+  end
+end
+
+## Legacy deployments who have node['packagecloud']['hostname'] set are
+## migrated over
+def stored_hostname
+  if node['packagecloud']['hostname']
+    node.set['packagecloud']['_stored_hostname'] = node['packagecloud']['hostname']
+  end
+  node['packagecloud']['_stored_hostname']
+end
+
+def should_issue_read_token?
+  node['packagecloud'][new_resource.repository].nil? || stored_hostname != override_or_fqdn_or_hostname
+end
+
+def override_or_fqdn_or_hostname
+  node['packagecloud']['override_hostname'] || node['fqdn'] || node['hostname']
+end
+
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
-  if node['fqdn'].nil?
-    Chef::Log.fatal("This node's fqdn is set to nil, so a read token cannot be issued!" \
-                    "Please change your fqdn settings.")
-  end
-
-  if node['packagecloud'][new_resource.repository].nil? ||
-     node['packagecloud']['hostname'] != node['fqdn']
-
+  if should_issue_read_token?
     base_url = new_resource.base_url
 
     base_repo_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
@@ -161,7 +189,6 @@ def read_token(repo_url, gems=false)
 
     Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-    node.set['packagecloud']['hostname'] = node['fqdn']
     node.set['packagecloud'][new_resource.repository] = Mash.new(read_token:  resp.body.chomp)
   end
 
@@ -174,7 +201,7 @@ def read_token(repo_url, gems=false)
   end
 end
 
-def install_endpoint_params
+def install_endpoint_params(args={})
   dist = value_for_platform_family(
     'debian' => node['lsb']['codename'],
     ['rhel', 'fedora'] => node['platform_version'],
@@ -182,7 +209,7 @@ def install_endpoint_params
 
   { :os   => node['platform'],
     :dist => dist,
-    :name => node['fqdn'] }
+    :name => get_hostname }
 end
 
 def filename
