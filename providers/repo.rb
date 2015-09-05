@@ -156,8 +156,17 @@ def get_hostname
   end
 end
 
+## Legacy deployments who have node['packagecloud']['hostname'] set are
+## migrated over
+def stored_hostname
+  if node['packagecloud']['hostname']
+    node.set['packagecloud']['_stored_hostname'] = node['packagecloud']['hostname']
+  end
+  node['packagecloud']['_stored_hostname']
+end
+
 def should_issue_read_token?
-  node['packagecloud'][new_resource.repository].nil? || node['packagecloud']['_stored_hostname'] != override_or_fqdn_or_hostname
+  node['packagecloud'][new_resource.repository].nil? || stored_hostname != override_or_fqdn_or_hostname
 end
 
 def override_or_fqdn_or_hostname
@@ -176,7 +185,7 @@ def read_token(repo_url, gems=false)
     uri.user     = new_resource.master_token
     uri.password = ''
 
-    resp = post(uri, install_endpoint_params({hostname: get_hostname}))
+    resp = post(uri, install_endpoint_params)
 
     Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
@@ -200,7 +209,7 @@ def install_endpoint_params(args={})
 
   { :os   => node['platform'],
     :dist => dist,
-    :name => args[:hostname] }
+    :name => get_hostname }
 end
 
 def filename
