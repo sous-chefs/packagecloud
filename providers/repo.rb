@@ -19,7 +19,7 @@ end
 
 def install_deb
   base_url = new_resource.base_url
-  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository, endpoint: node['platform']})
+  repo_url = construct_uri_with_options(base_url: base_url, repo: new_resource.repository, endpoint: node['platform'])
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
@@ -85,7 +85,7 @@ def install_rpm
 
   ruby_block 'disable repo_gpgcheck if no pygpgme' do
     block do
-      template = run_context.resource_collection.find(:template => "/etc/yum.repos.d/#{filename}.repo")
+      template = run_context.resource_collection.find(template: "/etc/yum.repos.d/#{filename}.repo")
       template.variables[:repo_gpgcheck] = 0
     end
     not_if 'rpm -qa | grep -qw pygpgme'
@@ -106,9 +106,8 @@ end
 def install_gem
   base_url = new_resource.base_url
 
-  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository})
+  repo_url = construct_uri_with_options(base_url: base_url, repo: new_resource.repository)
   repo_url = read_token(repo_url, true).to_s
-
 
   execute "install packagecloud #{new_resource.name} repo as gem source" do
     command "gem source --add #{repo_url}"
