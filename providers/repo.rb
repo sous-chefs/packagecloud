@@ -59,8 +59,6 @@ def install_rpm
 
   base_url_endpoint = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
-  gpg_filename = URI.parse(base_repo_url).host.gsub!('.', '_')
-
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
     base_url_endpoint.password = ''
@@ -93,10 +91,8 @@ def install_rpm
 
   yum_repository filename do
     baseurl read_token(base_url).to_s
-    gpg_filename gpg_filename
     repo_gpgcheck true
     description filename
-    priority new_resource.priority
     metadata_expire new_resource.metadata_expire
     gpgkey ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
     gpgcheck false
@@ -115,7 +111,6 @@ def install_gem
   end
 end
 
-
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
 
@@ -123,7 +118,7 @@ def read_token(repo_url, gems=false)
 
   base_repo_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
 
-  uri = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text'})
+  uri = construct_uri_with_options(base_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text')
   uri.user     = new_resource.master_token
   uri.password = ''
 
