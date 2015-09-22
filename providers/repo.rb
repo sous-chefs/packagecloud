@@ -91,37 +91,15 @@ def install_rpm
     not_if 'rpm -qa | grep -qw pygpgme'
   end
 
-  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
-    source ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
-    mode '0644'
-  end
-
-  template "/etc/yum.repos.d/#{filename}.repo" do
-    source 'yum.erb'
-    cookbook 'packagecloud'
-    mode '0644'
-    variables :base_url        => read_token(base_url).to_s,
-              :gpg_filename    => gpg_filename,
-              :name            => filename,
-              :repo_gpgcheck   => 1,
-              :description     => filename,
-              :priority        => new_resource.priority,
-              :metadata_expire => new_resource.metadata_expire
-
-    notifies :run, "execute[yum-makecache-#{filename}]", :immediately
-    notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
-  end
-
-  # get the metadata for this repo only
-  execute "yum-makecache-#{filename}" do
-    command "yum -q makecache -y --disablerepo=* --enablerepo=#{filename}"
-    action :nothing
-  end
-
-  # reload internal Chef yum cache
-  ruby_block "yum-cache-reload-#{filename}" do
-    block { Chef::Provider::Package::Yum::YumCache.instance.reload }
-    action :nothing
+  yum_repository filename do
+    baseurl read_token(base_url).to_s
+    gpg_filename gpg_filename
+    repo_gpgcheck true
+    description filename
+    priority new_resource.priority
+    metadata_expire new_resource.metadata_expire
+    gpgkey ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
+    gpgcheck false
   end
 end
 
