@@ -33,15 +33,28 @@ def install_deb
               :distribution => node['lsb']['codename'],
               :component    => 'main'
 
-    notifies :run, "execute[apt-key-add-#{filename}]", :immediately
+    notifies :run, "execute[apt-key-add-#{filename}]", :immediately unless new_resource.gpg_key
+    notifies :create, "cookbook_file[#{cached_keyfile}]", :immediately if new_resource.gpg_key
     notifies :run, "execute[apt-get-update-#{filename}]", :immediately
   end
 
   gpg_key_url = ::File.join(base_url, node['packagecloud']['gpg_key_path'])
 
-  execute "apt-key-add-#{filename}" do
-    command "wget -qO - #{gpg_key_url} | apt-key add -"
-    action :nothing
+  if new_resource.gpg_key
+    cookbook_file cached_keyfile do
+      source new_resource.gpg_key
+      mode '0644'
+      notifies :run, "execute[apt-key-add-#{filename}]", :immediately
+    end
+    execute "apt-key-add-#{filename}" do
+      command "apt-key add #{cached_keyfile}"
+      action :nothing
+    end
+  else
+    execute "apt-key-add-#{filename}" do
+      command "wget -qO - #{gpg_key_url} | apt-key add -"
+      action :nothing
+    end
   end
 
   execute "apt-get-update-#{filename}" do
@@ -91,9 +104,16 @@ def install_rpm
     not_if 'rpm -qa | grep -qw pygpgme'
   end
 
-  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
-    source ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
-    mode '0644'
+  if new_resource.gpg_key
+    cookbook_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
+      source new_resource.gpg_key
+      mode '0644'
+    end
+  else
+    remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
+      source ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
+      mode '0644'
+    end
   end
 
   template "/etc/yum.repos.d/#{filename}.repo" do
@@ -189,6 +209,11 @@ end
 
 def filename
   new_resource.name.gsub(/[^0-9A-z.\-]/, '_')
+end
+
+def cached_keyfile
+  key_name = new_resource.gpg_key.split(%r{\/}).last
+  "#{Chef::Config[:file_cache_path]}/#{key_name}"
 end
 
 def is_rhel5?
