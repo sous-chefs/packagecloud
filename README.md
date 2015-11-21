@@ -36,14 +36,14 @@ packagecloud_repo "computology/packagecloud-cookbook-test-private" do
 end
 ```
 
-For forcing the os platform, supply `force_os`:
+For forcing the os and dist for repository install:
 
 ```
-packagecloud_repo "computology/packagecloud-cookbook-test-public" do
-  type "rpm"
-  force_os "rhel"
+packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
+  type 'rpm'
+  force_os 'rhel'
+  force_dist '6.5'
 end
-
 ```
 
 Valid options for `type` include `deb`, `rpm`, and `gem`.
