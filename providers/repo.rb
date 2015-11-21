@@ -164,7 +164,7 @@ def read_token(repo_url, gems=false)
 end
 
 def install_endpoint_params
-  dist = value_for_platform_family(
+  dist = new_resource.force_dist || value_for_platform_family(
     'debian' => node['lsb']['codename'],
     ['rhel', 'fedora'] => node['platform_version'],
   )
