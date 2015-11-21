@@ -178,9 +178,13 @@ def install_endpoint_params
           "if it cannot be automatically determined by Ohai.")
   end
 
-  { :os   => node['platform'],
+  { :os   => os_platform,
     :dist => dist,
     :name => hostname }
+end
+
+def os_platform
+  new_resource.force_os || node['platform']
 end
 
 def filename
