@@ -178,7 +178,7 @@ def install_endpoint_params
           "if it cannot be automatically determined by Ohai.")
   end
 
-  { :os   => node['platform'],
+  { :os   => node['platform_family'],
     :dist => dist,
     :name => hostname }
 end
