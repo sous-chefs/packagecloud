@@ -76,5 +76,6 @@ Beginning in 0.1.0, you can use
 `default['packagecloud']['hostname_override']` to specify a hostname if ohai
 is unable to determine the hostname of the node on its own.
 
+
 ## Credits
 Computology, LLC.
