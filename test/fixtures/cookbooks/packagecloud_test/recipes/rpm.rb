@@ -12,3 +12,11 @@ end
 
 package 'man'
 package 'jake-docs'
+
+packagecloud_repo 'computology/packagecloud-test-packages' do
+  type 'rpm'
+  force_os 'rhel'
+  force_dist '6.7'
+end
+
+package 'packagecloud-test'
