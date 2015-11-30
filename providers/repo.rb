@@ -19,7 +19,7 @@ end
 
 def install_deb
   base_url = new_resource.base_url
-  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository, endpoint: node['platform']})
+  repo_url = construct_uri_with_options(base_url: base_url, repo: new_resource.repository, endpoint: node['platform'])
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
@@ -59,8 +59,6 @@ def install_rpm
 
   base_url_endpoint = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'rpm_base_url'})
 
-  gpg_filename = URI.parse(base_repo_url).host.gsub!('.', '_')
-
   if new_resource.master_token
     base_url_endpoint.user     = new_resource.master_token
     base_url_endpoint.password = ''
@@ -85,59 +83,33 @@ def install_rpm
 
   ruby_block 'disable repo_gpgcheck if no pygpgme' do
     block do
-      template = run_context.resource_collection.find(:template => "/etc/yum.repos.d/#{filename}.repo")
+      template = run_context.resource_collection.find(template: "/etc/yum.repos.d/#{filename}.repo")
       template.variables[:repo_gpgcheck] = 0
     end
     not_if 'rpm -qa | grep -qw pygpgme'
   end
 
-  remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-#{gpg_filename}" do
-    source ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
-    mode '0644'
-  end
-
-  template "/etc/yum.repos.d/#{filename}.repo" do
-    source 'yum.erb'
-    cookbook 'packagecloud'
-    mode '0644'
-    variables :base_url        => read_token(base_url).to_s,
-              :gpg_filename    => gpg_filename,
-              :name            => filename,
-              :repo_gpgcheck   => 1,
-              :description     => filename,
-              :priority        => new_resource.priority,
-              :metadata_expire => new_resource.metadata_expire
-
-    notifies :run, "execute[yum-makecache-#{filename}]", :immediately
-    notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
-  end
-
-  # get the metadata for this repo only
-  execute "yum-makecache-#{filename}" do
-    command "yum -q makecache -y --disablerepo=* --enablerepo=#{filename}"
-    action :nothing
-  end
-
-  # reload internal Chef yum cache
-  ruby_block "yum-cache-reload-#{filename}" do
-    block { Chef::Provider::Package::Yum::YumCache.instance.reload }
-    action :nothing
+  yum_repository filename do
+    baseurl read_token(base_url).to_s
+    repo_gpgcheck true
+    description filename
+    metadata_expire new_resource.metadata_expire
+    gpgkey ::File.join(given_base_url, node['packagecloud']['gpg_key_path'])
+    gpgcheck false
   end
 end
 
 def install_gem
   base_url = new_resource.base_url
 
-  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository})
+  repo_url = construct_uri_with_options(base_url: base_url, repo: new_resource.repository)
   repo_url = read_token(repo_url, true).to_s
-
 
   execute "install packagecloud #{new_resource.name} repo as gem source" do
     command "gem source --add #{repo_url}"
     not_if "gem source --list | grep #{repo_url}"
   end
 end
-
 
 def read_token(repo_url, gems=false)
   return repo_url unless new_resource.master_token
@@ -146,7 +118,7 @@ def read_token(repo_url, gems=false)
 
   base_repo_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
 
-  uri = construct_uri_with_options({base_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text'})
+  uri = construct_uri_with_options(base_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text')
   uri.user     = new_resource.master_token
   uri.password = ''
 
