@@ -11,6 +11,7 @@ platforms:
   run_list:
     - recipe[packagecloud_test::lucid_deps]
     - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::deb_gpg_key]
     - recipe[packagecloud_test::rubygems_private]
 
 - name: ubuntu-12.04
@@ -20,6 +21,7 @@ platforms:
   run_list:
     - recipe[packagecloud_test::precise_deps]
     - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::deb_gpg_key]
     - recipe[packagecloud_test::rubygems_private]
 
 - name: ubuntu-14.04
@@ -29,6 +31,7 @@ platforms:
   run_list:
     - recipe[packagecloud_test::trusty_deps]
     - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::deb_gpg_key]
     - recipe[packagecloud_test::rubygems]
 
 - name: centos-without-epel-5.10
