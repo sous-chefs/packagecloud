@@ -48,6 +48,33 @@ end
 
 Valid options for `type` include `deb`, `rpm`, and `gem`.
 
+### Providing GPG Key out-of-band
+
+For an extra layer of security, it's possible to provide the GPG Key via chef
+instead of downloading it over https. You can add the `gpg_key` property with
+the cookbook file path.
+
+For example, place the key in `some-cookbook/files/default/packagecloud.gpg.key`
+and then reference it like this:
+
+```
+packagecloud_repo "computology/packagecloud-cookbook-test" do
+  type "deb"
+  gpg_key "packagecloud.gpg.key"
+end
+```
+
+If the key is in a different cookbook, you can also specify the property
+`gpg_key_cookbook`:
+
+```
+packagecloud_repo "computology/packagecloud-cookbook-test" do
+  type "deb"
+  gpg_key "packagecloud.gpg.key"
+  gpg_key_cookbook "some-cookbook"
+end
+```
+
 ## Interactions with other cookbooks
 
 On CentOS 5, the official chef yum cookbook overwrites the file
