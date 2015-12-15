@@ -43,6 +43,7 @@ def install_deb
   if new_resource.gpg_key
     cookbook_file cached_keyfile do
       source new_resource.gpg_key
+      cookbook new_resource.gpg_key_cookbook
       mode '0644'
       notifies :run, "execute[apt-key-add-#{filename}]", :immediately
     end
