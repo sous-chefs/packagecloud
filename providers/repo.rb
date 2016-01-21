@@ -37,6 +37,13 @@ def install_deb
 
   package 'wget'
   package 'apt-transport-https'
+  package 'lsb-release'
+
+  ohai "reload-lsb-#{filename}" do
+    plugin 'lsb'
+    action :nothing
+    subscribes :reload, 'package[lsb-release]', :immediately
+  end
 
   repo_url = read_token(repo_url)
 
@@ -44,18 +51,21 @@ def install_deb
     source 'apt.erb'
     cookbook 'packagecloud'
     mode '0644'
-    variables :base_url     => repo_url.to_s,
-              :distribution => node['lsb']['codename'],
-              :component    => 'main'
+    variables lazy {
+      { :base_url     => repo_url.to_s,
+        :distribution => node['lsb']['codename'],
+        :component    => 'main' }
+    }
 
     notifies :run, "execute[apt-key-add-#{filename}]", :immediately
     notifies :run, "execute[apt-get-update-#{filename}]", :immediately
   end
 
-  gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token)
-
   execute "apt-key-add-#{filename}" do
-    command "wget --auth-no-challenge -qO - #{gpg_url.to_s} | apt-key add -"
+    command lazy {
+      gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token)
+      "wget --auth-no-challenge -qO - #{gpg_url.to_s} | apt-key add -"
+    }
     action :nothing
   end
 
