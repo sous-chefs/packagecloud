@@ -23,6 +23,7 @@ def install_deb
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
+  package 'wget'
   package 'apt-transport-https'
 
   template "/etc/apt/sources.list.d/#{filename}.list" do
