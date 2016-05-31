@@ -2,6 +2,12 @@ packagecloud
 ===============
 This is the Changelog for the packagecloud cookbook
 
+v0.2.1 (2016-05-31)
+-------------------
+Set metadata_expire option to default of 300 (5 minutes) to match the
+generated configs produced by the bash and manual install instructions.
+
+
 v0.2.0 (2015-02-17)
 -------------------
 Rework GPG paths to support new GPG endpoints for repos with repo-specific GPG
