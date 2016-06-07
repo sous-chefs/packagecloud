@@ -2,6 +2,14 @@ packagecloud
 ===============
 This is the Changelog for the packagecloud cookbook
 
+v0.2.3 (2016-06-1)
+-------------------
+Try to fix metadata_expire type (set as String)
+
+v0.2.2 (2016-06-1)
+-------------------
+Try to fix metadata_expire type (set as Integer)
+
 v0.2.1 (2016-05-31)
 -------------------
 Set metadata_expire option to default of 300 (5 minutes) to match the
