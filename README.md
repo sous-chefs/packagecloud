@@ -85,17 +85,7 @@ resource is set so that the GPG keys end up in the right place.
 
 ## Changelog
 
-packagecloud cookbook versions 0.0.19 used an attribute called
-`default['packagecloud']['hostname']` for caching the local machine's hostname
-to avoid regenerating read tokens.
-
-This attribute has been removed as it is confusing and in some edge cases,
-buggy.
-
-Beginning in 0.1.0, you can use
-`default['packagecloud']['hostname_override']` to specify a hostname if ohai
-is unable to determine the hostname of the node on its own.
-
+See CHANGELOG.md for more recent changes.
 
 ## Credits
 Computology, LLC.
