@@ -48,13 +48,15 @@ end
 
 Valid options for `type` include `deb`, `rpm`, and `gem`.
 
-This cookbook makes checks to determine if a package exists before installing.
-To enable proxy support *for these checks*, add the following attributes to
-your cookbook:
+This cookbook performs checks to determine if a package exists before attempting
+to install it. To enable proxy support *for these checks* (not to be confused
+with proxy support for your package manager of choice), add the following
+attributes to your cookbook:
 
 ```
 default['packagecloud']['proxy_host'] = 'myproxy.organization.com'
 default['packagecloud']['proxy_port'] = '80'
+```
 
 ## Interactions with other cookbooks
 
