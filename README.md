@@ -48,6 +48,14 @@ end
 
 Valid options for `type` include `deb`, `rpm`, and `gem`.
 
+This cookbook makes checks to determine if a package exists before installing.
+To enable proxy support *for these checks*, add the following attributes to
+your cookbook:
+
+```
+default['packagecloud']['proxy_host'] = 'myproxy.organization.com'
+default['packagecloud']['proxy_port'] = '80'
+
 ## Interactions with other cookbooks
 
 On CentOS 5, the official chef yum cookbook overwrites the file
