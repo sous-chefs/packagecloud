@@ -181,7 +181,7 @@ def install_endpoint_params
              node['fqdn'] ||
              node['hostname']
 
-  if !hostname
+  if !hostname || hostname.empty?
     raise("Can't determine hostname!  Set node['packagecloud']['hostname_override'] " \
           "if it cannot be automatically determined by Ohai.")
   end
