@@ -2,6 +2,11 @@ packagecloud
 ===============
 This is the Changelog for the packagecloud cookbook
 
+v0.2.5 (2016-08-11)
+-------------------
+Check for empty node hostname. Display error when a node's fully qualified hostname
+is not set; as returned by `hostname -f`
+
 v0.2.4 (2016-07-05)
 -------------------
 Add `proxy_host` and `proxy_port` attributes so that the cookbook can contact the
