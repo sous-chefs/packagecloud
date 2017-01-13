@@ -81,10 +81,6 @@ def install_rpm
 
   Chef::Log.debug("#{new_resource.name} rpm base url = #{base_url}")
 
-  package 'pygpgme' do
-    ignore_failure true
-  end
-
   log 'pygpgme_warning' do
     message 'The pygpgme package could not be installed. This means GPG verification is not possible for any RPM installed on your system. ' \
             'To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. ' \
