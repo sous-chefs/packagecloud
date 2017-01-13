@@ -83,7 +83,7 @@ def install_rpm
 
   log 'pygpgme_warning' do
     message 'The pygpgme package is not installed. This means GPG verification is not possible for any RPM installed on your system. ' \
-            'To fix this, add a repository with pygpgme. Usualy, the EPEL repository for your system will have this. ' \
+            'To fix this, add a repository with pygpgme. Usually, the EPEL repository for your system will have this. ' \
             'More information: https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F and https://github.com/opscode-cookbooks/yum-epel'
 
     level :warn
