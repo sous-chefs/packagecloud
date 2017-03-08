@@ -31,7 +31,7 @@ end
 
 def install_deb
   base_url = new_resource.base_url
-  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository, endpoint: node['platform']})
+  repo_url = construct_uri_with_options({base_url: base_url, repo: new_resource.repository, endpoint: os_platform })
 
   Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
@@ -45,7 +45,7 @@ def install_deb
     cookbook 'packagecloud'
     mode '0644'
     variables :base_url     => repo_url.to_s,
-              :distribution => node['lsb']['codename'],
+              :distribution => dist_name,
               :component    => 'main'
 
     notifies :run, "execute[apt-key-add-#{filename}]", :immediately
@@ -172,10 +172,7 @@ def read_token(repo_url, gems=false)
 end
 
 def install_endpoint_params
-  dist = new_resource.force_dist || value_for_platform_family(
-    'debian' => node['lsb']['codename'],
-    ['rhel', 'fedora'] => node['platform_version'],
-  )
+  dist = dist_name
 
   hostname = node['packagecloud']['hostname_override'] ||
              node['fqdn'] ||
@@ -193,6 +190,13 @@ end
 
 def os_platform
   new_resource.force_os || node['platform']
+end
+
+def dist_name
+  new_resource.force_dist || value_for_platform_family(
+    'debian' => node['lsb']['codename'],
+    ['rhel', 'fedora'] => node['platform_version'],
+  )
 end
 
 def filename
