@@ -17,3 +17,11 @@ execute 'install_jake_source' do
   cwd '/home/vagrant'
   command 'apt-get source jake'
 end
+
+packagecloud_repo 'computology/packagecloud-test-packages' do
+  type 'deb'
+  force_os 'debian'
+  force_dist 'wheezy'
+end
+
+package 'packagecloud-test'
