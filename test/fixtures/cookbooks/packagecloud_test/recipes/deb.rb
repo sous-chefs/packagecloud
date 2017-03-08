@@ -23,5 +23,3 @@ packagecloud_repo 'computology/packagecloud-test-packages' do
   force_os 'debian'
   force_dist 'wheezy'
 end
-
-package 'packagecloud-test'
