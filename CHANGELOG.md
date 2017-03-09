@@ -2,6 +2,13 @@ packagecloud
 ===============
 This is the Changelog for the packagecloud cookbook
 
+v0.3.0 (2017-03-08)
+------------------
+Fix force_os and force_dist for Ubuntu/Debian.
+Drop support for Ubuntu Lucid.
+Add support for Ubuntu Xenial.
+Ensure lsb_release is installed on Ubuntu/Debian.
+
 v0.2.5 (2016-08-11)
 -------------------
 Check for empty node hostname. Display error when a node's fully qualified hostname
