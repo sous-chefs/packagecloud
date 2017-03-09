@@ -4,15 +4,6 @@ driver_config:
   require_chef_omnibus: true
 
 platforms:
-- name: ubuntu-10.04
-  driver_config:
-    box: opscode-ubuntu-10.04
-    box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-10.04_provisionerless.box
-  run_list:
-    - recipe[packagecloud_test::lucid_deps]
-    - recipe[packagecloud_test::deb]
-    - recipe[packagecloud_test::rubygems_private]
-
 - name: ubuntu-12.04
   driver_config:
     box: opscode-ubuntu-12.04
@@ -30,6 +21,15 @@ platforms:
     - recipe[packagecloud_test::trusty_deps]
     - recipe[packagecloud_test::deb]
     - recipe[packagecloud_test::rubygems]
+
+- name: ubuntu-16.04
+  driver_config:
+    box: opscode-ubuntu-16.04
+    box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-16.04_chef-provisionerless.box
+  run_list:
+    - recipe[packagecloud_test::trusty_deps]
+    - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::rubygems_private]
 
 - name: centos-without-epel-5.10
   driver_config:
