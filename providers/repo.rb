@@ -203,6 +203,7 @@ end
 def dist_name
   new_resource.force_dist || value_for_platform_family(
     'debian' => node['lsb']['codename'],
+    'amazon' => '6',
     %w(rhel fedora) => node['platform_version']
   )
 end
