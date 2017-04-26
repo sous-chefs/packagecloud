@@ -4,6 +4,6 @@ if platform_family?('debian')
   end
 end
 
-package "ruby"
-package "rubygems-integration"
-package "dpkg-dev"
+package 'ruby'
+package 'rubygems-integration'
+package 'dpkg-dev'

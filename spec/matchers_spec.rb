@@ -2,7 +2,6 @@ require 'chefspec'
 require 'chefspec/berkshelf'
 
 describe 'packagecloud_test::deb' do
-
   let(:chef_run) { ChefSpec::SoloRunner.converge(described_recipe) }
 
   it 'should create packagecloud_repo' do

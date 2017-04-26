@@ -3,6 +3,6 @@ packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
 end
 
 gem_package 'jakedotrb' do
-  options "--bindir /usr/local/bin"
+  options '--bindir /usr/local/bin'
   version '0.0.1'
 end
