@@ -61,7 +61,7 @@ def install_deb
     notifies :run, "execute[apt-get-update-#{filename}]", :immediately
   end
 
-  execute "apt-key-add-#{filename}" do
+  execute "apt-key-add-#{filename}" do # ~FC041
     command lazy {
       gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token)
       "wget --auth-no-challenge -qO - #{gpg_url} | apt-key add -"
