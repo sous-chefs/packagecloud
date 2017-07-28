@@ -28,45 +28,18 @@ action_class do
 
     Chef::Log.debug("#{new_resource.name} deb repo url = #{repo_url}")
 
-    package 'wget'
     package 'apt-transport-https'
-    package 'lsb-release'
 
-    ohai "reload-lsb-#{filename}" do
-      plugin 'lsb'
-      action :nothing
-      subscribes :reload, 'package[lsb-release]', :immediately
-    end
+    repo_url = read_token(repo_url).to_s
+    gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token).to_s
 
-    repo_url = read_token(repo_url)
-
-    template "/etc/apt/sources.list.d/#{filename}.list" do
-      source 'apt.erb'
-      cookbook 'packagecloud'
-      mode '0644'
-      variables lazy {
-        { :base_url     => repo_url.to_s,
-          :distribution => dist_name,
-          :component    => 'main' }
-      }
-
-      notifies :run, "execute[apt-key-add-#{filename}]", :immediately
-      notifies :run, "execute[apt-get-update-#{filename}]", :immediately
-    end
-
-    execute "apt-key-add-#{filename}" do
-      command lazy {
-        gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token)
-        "wget --auth-no-challenge -qO - #{gpg_url.to_s} | apt-key add -"
-      }
-      action :nothing
-    end
-
-    execute "apt-get-update-#{filename}" do
-      command "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/#{filename}.list\"" \
-        " -o Dir::Etc::sourceparts=\"-\"" \
-        " -o APT::Get::List-Cleanup=\"0\""
-      action :nothing
+    apt_repository filename do
+      uri repo_url
+      components ['main']
+      distribution dist_name
+      key gpg_url
+      action :add
+      deb_src true
     end
   end
 
@@ -99,7 +72,7 @@ action_class do
 
     ruby_block 'disable repo_gpgcheck if no pygpgme' do
       block do
-        template = run_context.resource_collection.find(:template => "/etc/yum.repos.d/#{filename}.repo")
+        template = run_context.resource_collection.find(template: "/etc/yum.repos.d/#{filename}.repo")
         template.variables[:repo_gpgcheck] = 0
       end
       not_if 'rpm -qa | grep -qw pygpgme'
@@ -111,13 +84,13 @@ action_class do
       source 'yum.erb'
       cookbook 'packagecloud'
       mode '0644'
-      variables :base_url        => base_url.to_s,
-        :name            => filename,
-        :gpg_url         => gpg_url.to_s,
-        :repo_gpgcheck   => 1,
-        :description     => filename,
-        :priority        => new_resource.priority,
-        :metadata_expire => new_resource.metadata_expire
+      variables base_url: base_url.to_s,
+        name: filename,
+        gpg_url: gpg_url.to_s,
+        repo_gpgcheck: 1,
+        description: filename,
+        priority: new_resource.priority,
+        metadata_expire: new_resource.metadata_expire
 
       notifies :run, "execute[yum-makecache-#{filename}]", :immediately
       notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
@@ -186,9 +159,9 @@ action_class do
             "if it cannot be automatically determined by Ohai.")
     end
 
-    { :os   => os_platform,
-      :dist => dist,
-      :name => hostname }
+    { os: os_platform,
+      dist: dist,
+      name: hostname }
   end
 
   def os_platform
