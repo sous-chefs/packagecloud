@@ -44,15 +44,16 @@ platforms:
 - name: amazon-2014.09
   driver_plugin: ec2
   driver_config:
+    transport:
+      username: ec2-user
     image_id: ami-b5a7ea85
-    username: ec2-user
     aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
     aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
     aws_ssh_key_id: <%= ENV['AWS_KEYPAIR_NAME'] %>
     ssh_key: <%= ENV['AWS_SSH_KEY_PATH'] %>
     availability_zone: us-west-2a
     region: us-west-2
-    flavor_id: t2.micro
+    instance_type: t2.micro
     security_group_ids: sg-598e583c
   run_list:
     - recipe[packagecloud_test::rpm]
