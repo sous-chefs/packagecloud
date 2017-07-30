@@ -1,4 +1,3 @@
-
 dist: trusty
 sudo: false
 addons:
@@ -20,8 +19,8 @@ before_script:
   - eval "$(/opt/chefdk/bin/chef shell-init bash)"
 
 script:
-  - /opt/chefdk/embedded/bin/chef --version
-  - /opt/chefdk/embedded/bin/cookstyle --version
-  - /opt/chefdk/embedded/bin/foodcritic --version
-  - /opt/chefdk/bin/chef exec delivery local all
+  - chef --version
+  - cookstyle --version
+  - foodcritic --version
+  - chef exec delivery local all
 
