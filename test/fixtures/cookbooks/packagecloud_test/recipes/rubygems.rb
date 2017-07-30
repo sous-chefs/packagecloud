@@ -7,4 +7,5 @@ end
 gem_package 'jakedotrb' do
   options '--bindir /usr/local/bin'
   version '0.0.1'
+  source 'https://packagecloud.io/computology/packagecloud-cookbook-test-public/'
 end
