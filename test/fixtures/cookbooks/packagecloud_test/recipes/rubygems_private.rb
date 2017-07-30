@@ -1,4 +1,4 @@
-apt_update
+include_recipe 'packagecloud_test::distro_deps'
 
 packagecloud_repo 'computology/packagecloud-cookbook-test-private' do
   type 'gem'

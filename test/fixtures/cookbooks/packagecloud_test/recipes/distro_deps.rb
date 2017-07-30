@@ -1,10 +1,9 @@
-apt_update
-
-case node['platform']
-when 'centos', 'fedora'
+case node['platform_family']
+when 'rhel', 'fedora', 'amazon'
   package 'ruby'
   package 'rubygems'
-when 'ubuntu'
+when 'debian'
+  apt_update
   package 'ruby'
   package 'dpkg-dev'
 end

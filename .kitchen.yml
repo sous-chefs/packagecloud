@@ -7,25 +7,21 @@ platforms:
 
 - name: ubuntu-14.04
   run_list:
-    - recipe[packagecloud_test::distro_deps]
     - recipe[packagecloud_test::deb]
     - recipe[packagecloud_test::rubygems]
 
 - name: ubuntu-16.04
   run_list:
-    - recipe[packagecloud_test::distro_deps]
     - recipe[packagecloud_test::deb]
     - recipe[packagecloud_test::rubygems_private]
 
-- name: centos-6.8
+- name: centos-6.9
   run_list:
-    - recipe[packagecloud_test::distro_deps]
     - recipe[packagecloud_test::rpm]
     - recipe[packagecloud_test::rubygems]
 
 - name: centos-7.3
   run_list:
-    - recipe[packagecloud_test::distro_deps]
     - recipe[packagecloud_test::rpm]
     - recipe[packagecloud_test::rubygems_private]
 

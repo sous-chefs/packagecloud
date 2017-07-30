@@ -1,3 +1,5 @@
+include_recipe 'packagecloud_test::distro_deps'
+
 packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
   type 'gem'
 end
