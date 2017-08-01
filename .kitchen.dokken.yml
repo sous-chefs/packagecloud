@@ -14,6 +14,12 @@ verifier:
   name: inspec
 
 platforms:
+- name: centos-5
+  driver:
+    image: dokken/centos-5
+    platform: rhel
+    pid_one_command: /sbin/init
+
 - name: centos-6
   driver:
     image: dokken/centos-6
@@ -25,6 +31,13 @@ platforms:
     image: dokken/centos-7
     platform: rhel
     pid_one_command: /usr/lib/systemd/systemd
+
+- name: ubuntu-12.04
+  driver:
+    image: dokken/ubuntu-12.04
+    pid_one_command: /sbin/init
+    intermediate_instructions:
+      - RUN /usr/bin/apt-get update
 
 - name: ubuntu-14.04
   driver:
