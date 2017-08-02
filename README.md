@@ -1,6 +1,6 @@
 # packagecloud cookbook
 
-This cookbook provides an LWRP for installing <https://packagecloud.io> repositories.
+This cookbook provides a resource for installing <https://packagecloud.io> repositories.
 
 NOTE: Please see the Changelog below for important changes if upgrading from 0.0.19 to 0.1.0.
 
