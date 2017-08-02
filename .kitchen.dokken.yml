@@ -19,18 +19,27 @@ platforms:
     image: dokken/centos-5
     platform: rhel
     pid_one_command: /sbin/init
+  run_list:
+    - recipe[packagecloud_test::rpm]
+    - recipe[packagecloud_test::rubygems]
 
 - name: centos-6
   driver:
     image: dokken/centos-6
     platform: rhel
     pid_one_command: /sbin/init
+  run_list:
+    - recipe[packagecloud_test::rpm]
+    - recipe[packagecloud_test::rubygems]
 
 - name: centos-7
   driver:
     image: dokken/centos-7
     platform: rhel
     pid_one_command: /usr/lib/systemd/systemd
+  run_list:
+    - recipe[packagecloud_test::rpm]
+    - recipe[packagecloud_test::rubygems_private]
 
 - name: ubuntu-12.04
   driver:
@@ -38,6 +47,9 @@ platforms:
     pid_one_command: /sbin/init
     intermediate_instructions:
       - RUN /usr/bin/apt-get update
+  run_list:
+    - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::rubygems]
 
 - name: ubuntu-14.04
   driver:
@@ -45,6 +57,9 @@ platforms:
     pid_one_command: /sbin/init
     intermediate_instructions:
       - RUN /usr/bin/apt-get update
+  run_list:
+    - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::rubygems]
 
 - name: ubuntu-16.04
   driver:
@@ -52,3 +67,6 @@ platforms:
     pid_one_command: /bin/systemd
     intermediate_instructions:
       - RUN /usr/bin/apt-get update
+  run_list:
+    - recipe[packagecloud_test::deb]
+    - recipe[packagecloud_test::rubygems_private]
