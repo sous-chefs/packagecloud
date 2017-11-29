@@ -25,12 +25,12 @@ platforms:
     - recipe[packagecloud_test::rpm]
     - recipe[packagecloud_test::rubygems]
 
-- name: centos-6.9
+- name: centos-6
   run_list:
     - recipe[packagecloud_test::rpm]
     - recipe[packagecloud_test::rubygems]
 
-- name: centos-7.3
+- name: centos-7
   run_list:
     - recipe[packagecloud_test::rpm]
     - recipe[packagecloud_test::rubygems_private]
