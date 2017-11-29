@@ -1,8 +1,12 @@
 case node['platform_family']
 when 'rhel', 'fedora', 'amazon'
   if node['platform_version'].to_i == 5
+    execute 'fixup repos' do
+      command 'sed -i "/mirrorlist/d" /etc/yum.repos.d/*.repo; sed -i -e "s/#baseurl/baseurl/g" /etc/yum.repos.d/*.repo; sed -i -e "s/mirror.centos.org\/centos\/\$releasever/vault.centos.org\/5.11/g" /etc/yum.repos.d/*.repo'
+    end
+
     yum_repository 'epel5' do
-      mirrorlist 'http://mirrors.fedoraproject.org/mirrorlist?repo=epel-5&arch=$basearch'
+      baseurl 'https://mirrors.rit.edu/fedora/archive/epel/5/$basearch'
       description 'Extra Packages for Enterprise Linux 5 - $basearch'
       enabled true
       gpgcheck true
