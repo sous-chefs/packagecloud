@@ -44,6 +44,7 @@ platforms:
     pid_one_command: /sbin/init
     intermediate_instructions:
       - RUN /usr/bin/apt-get update
+      - RUN /usr/bin/apt-get install -y man
   run_list:
     - recipe[packagecloud_test::deb]
     - recipe[packagecloud_test::rubygems]
@@ -54,6 +55,7 @@ platforms:
     pid_one_command: /sbin/init
     intermediate_instructions:
       - RUN /usr/bin/apt-get update
+      - RUN /usr/bin/apt-get install -y man
   run_list:
     - recipe[packagecloud_test::deb]
     - recipe[packagecloud_test::rubygems]
@@ -64,6 +66,7 @@ platforms:
     pid_one_command: /bin/systemd
     intermediate_instructions:
       - RUN /usr/bin/apt-get update
+      - RUN /usr/bin/apt-get install -y man
   run_list:
     - recipe[packagecloud_test::deb]
     - recipe[packagecloud_test::rubygems_private]
