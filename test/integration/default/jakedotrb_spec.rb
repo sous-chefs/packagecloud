@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 path = '/usr/local/bin/jakedotrb'
 
 describe command("ls #{path}") do
