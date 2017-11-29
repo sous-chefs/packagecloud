@@ -135,7 +135,7 @@ action_class.class_eval do
                 metadata_expire: new_resource.metadata_expire
 
       notifies :run, "execute[yum-makecache-#{filename}]", :immediately
-      notifies :create, "ruby_block[yum-cache-reload-#{filename}]", :immediately
+      notifies :run, "ruby_block[yum-cache-reload-#{filename}]", :immediately
     end
 
     # get the metadata for this repo only
