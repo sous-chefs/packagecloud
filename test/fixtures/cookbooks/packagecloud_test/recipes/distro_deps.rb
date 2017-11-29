@@ -9,10 +9,9 @@ when 'rhel', 'fedora', 'amazon'
       gpgkey 'http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL'
     end
   end
-  package 'ruby'
-  package 'rubygems'
+  package %w(ruby rubygems)
 when 'debian'
   apt_update 'update'
-  package 'ruby'
-  package 'dpkg-dev'
+  package %w(ruby dpkg-dev)
+  package 'rubygems' unless node['platform_version'].to_f == 14.04
 end
