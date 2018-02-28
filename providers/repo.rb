@@ -66,6 +66,7 @@ def install_deb
       gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token)
       "wget --auth-no-challenge -qO - #{gpg_url.to_s} | apt-key add -"
     }
+    retries 3
     action :nothing
   end
 
@@ -73,6 +74,7 @@ def install_deb
     command "apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/#{filename}.list\"" \
             " -o Dir::Etc::sourceparts=\"-\"" \
             " -o APT::Get::List-Cleanup=\"0\""
+    retries 3
     action :nothing
   end
 end
@@ -133,6 +135,7 @@ def install_rpm
   # get the metadata for this repo only
   execute "yum-makecache-#{filename}" do
     command "yum -q makecache -y --disablerepo=* --enablerepo=#{filename}"
+    retries 3
     action :nothing
   end
 
@@ -153,6 +156,7 @@ def install_gem
   execute "install packagecloud #{new_resource.name} repo as gem source" do
     command "gem source --add #{repo_url}"
     not_if "gem source --list | grep #{repo_url}"
+    retries 3
   end
 end
 
