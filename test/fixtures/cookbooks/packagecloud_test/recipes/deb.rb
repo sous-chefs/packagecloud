@@ -1,3 +1,5 @@
+include_recipe 'packagecloud_test::distro_deps'
+
 packagecloud_repo 'computology_public_deb' do
   repository 'computology/packagecloud-cookbook-test-public'
   type 'deb'
@@ -14,7 +16,6 @@ end
 package 'jake-doc'
 
 execute 'install_jake_source' do
-  cwd '/home/vagrant'
   command 'apt-get source jake'
 end
 

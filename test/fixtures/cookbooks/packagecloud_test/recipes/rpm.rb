@@ -1,3 +1,5 @@
+include_recipe 'packagecloud_test::distro_deps'
+
 packagecloud_repo 'computology_public_rpm' do
   repository 'computology/packagecloud-cookbook-test-public'
   type 'rpm'

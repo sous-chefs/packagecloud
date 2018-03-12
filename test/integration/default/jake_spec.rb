@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe command('ls /usr/local/bin/jake') do
   its(:exit_status) { should eq 0 }
 end
@@ -16,14 +14,16 @@ describe command('man jake') do
   its(:stdout) { should match /No known bugs/ }
 end
 
-describe command('ls /home/vagrant/jake_1.0-7.dsc'), :if => os[:family] == 'ubuntu' do
-  its(:exit_status) { should eq 0 }
-end
+if os[:family] == 'ubuntu'
+  describe command('ls /home/vagrant/jake_1.0-7.dsc') do
+    its(:exit_status) { should eq 0 }
+  end
 
-describe command('ls /home/vagrant/jake_1.0.orig.tar.bz2'), :if => os[:family] == 'ubuntu'  do
-  its(:exit_status) { should eq 0 }
-end
+  describe command('ls /home/vagrant/jake_1.0.orig.tar.bz2') do
+    its(:exit_status) { should eq 0 }
+  end
 
-describe command('ls /home/vagrant/jake_1.0-7.debian.tar.gz'), :if => os[:family] == 'ubuntu' do
-  its(:exit_status) { should eq 0 }
+  describe command('ls /home/vagrant/jake_1.0-7.debian.tar.gz') do
+    its(:exit_status) { should eq 0 }
+  end
 end
