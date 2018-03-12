@@ -2,6 +2,11 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## v1.0.0 (2018-03-12)
+
+Lots of internal refactoring and fixes. Bumping the major number just incase,
+but the changes should not break anyone using this cookbook.
+
 ## v0.3.0 (2017-03-08)
 
 Fix force_os and force_dist for Ubuntu/Debian. Drop support for Ubuntu Lucid. Add support for Ubuntu Xenial. Ensure lsb_release is installed on Ubuntu/Debian.
