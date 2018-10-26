@@ -2,6 +2,10 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## v1.0.1 (2018-10-25)
+
+Fix issues with newer versions of Chef (11+) by conditionally defining `source_url` and `issues_url` in metadata.rb
+
 ## v1.0.0 (2018-03-12)
 
 Lots of internal refactoring and fixes. Bumping the major number just incase,
