@@ -24,6 +24,7 @@ env:
   - INSTANCE=default-centos-6 CHEF_VERSION=12.7.2
   - INSTANCE=default-centos-7
   - INSTANCE=default-centos-7 CHEF_VERSION=12.7.2
+  - INSTANCE=default-centos-8
   - INSTANCE=default-ubuntu-1204
   - INSTANCE=default-ubuntu-1404
   - INSTANCE=default-ubuntu-1604
@@ -34,7 +35,7 @@ before_script:
   - cookstyle --version
   - foodcritic --version
 
-script: KITCHEN_LOCAL_YAML=.kitchen.dokken.yml kitchen verify ${INSTANCE}
+script: CHEF_LICENSE=accept KITCHEN_LOCAL_YAML=.kitchen.dokken.yml kitchen verify ${INSTANCE}
 
 matrix:
   include:
