@@ -39,6 +39,11 @@ platforms:
     - recipe[packagecloud_test::rpm]
     - recipe[packagecloud_test::rubygems_private]
 
+- name: centos-8
+  run_list:
+    - recipe[packagecloud_test::rpm]
+    - recipe[packagecloud_test::rubygems_private]
+
 - name: amazon-linux
   driver_config:
     box: mvbcoding/awslinux
