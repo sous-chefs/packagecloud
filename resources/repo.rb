@@ -1,3 +1,5 @@
+unified_mode true
+
 property :repository,      String, name_property: true
 property :master_token,    String
 property :force_os,        String
