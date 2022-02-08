@@ -1,4 +1,4 @@
-include_recipe 'packagecloud_test::distro_deps'
+include_recipe 'test::distro_deps'
 
 packagecloud_repo 'computology_public_rpm' do
   repository 'computology/packagecloud-cookbook-test-public'
@@ -12,8 +12,7 @@ packagecloud_repo 'computology/packagecloud-cookbook-test-private' do
   master_token '762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9'
 end
 
-package 'man'
-package 'jake-docs'
+package %w(man jake-docs)
 
 packagecloud_repo 'computology/packagecloud-test-packages' do
   type 'rpm'

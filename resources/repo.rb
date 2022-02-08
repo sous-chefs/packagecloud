@@ -1,11 +1,40 @@
-property :repository,      String, name_property: true
-property :master_token,    String
-property :force_os,        String
-property :force_dist,      String
-property :type,            String, equal_to: %w(deb rpm gem), default: lazy { node['packagecloud']['default_type'] }
-property :base_url,        String, default: 'https://packagecloud.io'
-property :priority,        [Integer, TrueClass, FalseClass], default: false
-property :metadata_expire, String, regex: [/^\d+[d|h|m]?$/], default: '300'
+unified_mode true
+
+property :repository,
+          String,
+          name_property: true
+
+property :master_token,
+          String
+
+property :force_os,
+          String
+
+property :force_dist,
+          String
+
+property :type,
+          String,
+          equal_to: %w(deb rpm gem),
+          default: lazy {
+            value_for_platform_family(
+              'debian' => 'deb',
+              %w(rhel fedora amazon) => 'rpm'
+            )
+          }
+
+property :base_url,
+          String,
+          default: 'https://packagecloud.io'
+
+property :priority,
+          [Integer, true, false],
+          default: false
+
+property :metadata_expire,
+          String,
+          regex: [/^\d+[d|h|m]?$/],
+          default: '300'
 
 action :add do
   case new_resource.type
@@ -20,7 +49,7 @@ action :add do
   end
 end
 
-action_class.class_eval do
+action_class do
   include ::PackageCloud::Helper
 
   require 'uri'
@@ -59,17 +88,17 @@ action_class.class_eval do
       source 'apt.erb'
       cookbook 'packagecloud'
       mode '0644'
-      variables lazy {
-        { base_url: repo_url.to_s,
-          distribution: dist_name,
-          component: 'main' }
-      }
+      variables(
+        base_url: repo_url.to_s,
+        distribution: dist_name,
+        component: 'main'
+      )
 
       notifies :run, "execute[apt-key-add-#{filename}]", :immediately
       notifies :run, "execute[apt-get-update-#{filename}]", :immediately
     end
 
-    execute "apt-key-add-#{filename}" do # ~FC041
+    execute "apt-key-add-#{filename}" do
       command lazy {
         gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token)
         "wget --auth-no-challenge -qO - #{gpg_url} | apt-key add -"
@@ -163,7 +192,7 @@ action_class.class_eval do
     end
   end
 
-  def read_token(repo_url, gems = false)
+  def read_token(repo_url)
     return repo_url unless new_resource.master_token
 
     base_url = new_resource.base_url
@@ -178,13 +207,9 @@ action_class.class_eval do
 
     Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-    if rhel5? && !gems
-      repo_url
-    else
-      repo_url.user     = resp.body.chomp
-      repo_url.password = ''
-      repo_url
-    end
+    repo_url.user     = resp.body.chomp
+    repo_url.password = ''
+    repo_url
   end
 
   def install_endpoint_params
@@ -220,10 +245,6 @@ action_class.class_eval do
     new_resource.name.gsub(/[^0-9A-z.\-]/, '_')
   end
 
-  def rhel5?
-    platform_family?('rhel') && node['platform_version'].to_i == 5
-  end
-
   def construct_uri_with_options(options)
     required_options = [:base_url, :repo]
 
@@ -237,7 +258,7 @@ action_class.class_eval do
     options[:base_url] = append_trailing_slash(options[:base_url])
     options[:repo]     = append_trailing_slash(options[:repo])
 
-    URI.join(options.delete(:base_url), options.inject([]) { |mem, opt| mem << opt[1] }.join)
+    URI.join(options.delete(:base_url), options.inject([]) { |acc, elem| acc << elem[1] }.join)
   end
 
   def append_trailing_slash(str)

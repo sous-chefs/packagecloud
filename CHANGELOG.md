@@ -2,6 +2,16 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## Unreleased
+
+- Migrate cookbook to Sous-Chefs
+- Update README
+- Rename the test cookbook to test
+- Update tested platforms
+  - see kitchen.yml for supported platforms
+- Turn on unified_mode for Chef 18 support
+- Require Chef 15.3 for unified_mode
+
 ## v1.0.1 (2018-10-25)
 
 Fix issues with newer versions of Chef (11+) by conditionally defining `source_url` and `issues_url` in metadata.rb
