@@ -141,14 +141,6 @@ action_class do
       not_if 'rpm -qa | grep -qw pygpgme'
     end
 
-    ruby_block 'disable repo_gpgcheck if no pygpgme' do
-      block do
-        template = run_context.resource_collection.find(template: "/etc/yum.repos.d/#{filename}.repo")
-        template.variables[:repo_gpgcheck] = 0
-      end
-      not_if 'rpm -qa | grep -qw pygpgme'
-    end
-
     gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :rpm, new_resource.master_token)
 
     template "/etc/yum.repos.d/#{filename}.repo" do
