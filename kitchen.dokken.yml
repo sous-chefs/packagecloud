@@ -3,8 +3,8 @@ driver:
   name: dokken
   privileged: true
 
-transport: { name: dokken }
-provisioner: { name: dokken }
+transport: {name: dokken}
+provisioner: {name: dokken}
 
 platforms:
   - name: almalinux-8
