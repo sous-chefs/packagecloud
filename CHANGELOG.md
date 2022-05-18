@@ -2,6 +2,18 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## Unreleased
+
+- resolved cookstyle error: Thorfile:1:1 convention: `Style/Encoding`
+- resolved cookstyle error: libraries/matchers.rb:1:1 refactor: `Chef/Modernize/DefinesChefSpecMatchers`
+- resolved cookstyle error: metadata.rb:6:1 refactor: `Chef/RedundantCode/LongDescriptionMetadata`
+- resolved cookstyle error: metadata.rb:8:1 refactor: `Chef/Modernize/RespondToInMetadata`
+- resolved cookstyle error: metadata.rb:9:1 refactor: `Chef/Modernize/RespondToInMetadata`
+- resolved cookstyle error: metadata.rb:10:1 refactor: `Chef/Modernize/RespondToInMetadata`
+- resolved cookstyle error: resources/repo.rb:23:1 refactor: `Chef/Modernize/ClassEvalActionClass`
+- resolved cookstyle error: resources/repo.rb:72:41 convention: `Layout/TrailingWhitespace`
+- resolved cookstyle error: resources/repo.rb:72:42 refactor: `Chef/Modernize/FoodcriticComments`
+
 ## v1.0.1 (2018-10-25)
 
 Fix issues with newer versions of Chef (11+) by conditionally defining `source_url` and `issues_url` in metadata.rb

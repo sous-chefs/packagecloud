@@ -20,7 +20,7 @@ action :add do
   end
 end
 
-action_class.class_eval do
+action_class do
   include ::PackageCloud::Helper
 
   require 'uri'
@@ -69,7 +69,7 @@ action_class.class_eval do
       notifies :run, "execute[apt-get-update-#{filename}]", :immediately
     end
 
-    execute "apt-key-add-#{filename}" do # ~FC041
+    execute "apt-key-add-#{filename}" do
       command lazy {
         gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :deb, new_resource.master_token)
         "wget --auth-no-challenge -qO - #{gpg_url} | apt-key add -"
