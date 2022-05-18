@@ -181,10 +181,8 @@ action_class do
   end
 
   def install_gem
-    base_url = new_resource.base_url
-
-    repo_url = construct_uri_with_options(base_url: base_url, repo: new_resource.repository)
-    repo_url = read_token(repo_url, true).to_s
+    repo_url = construct_uri_with_options(base_url: new_resource.base_url, repo: new_resource.repository)
+    repo_url = read_token(repo_url).to_s
 
     execute "install packagecloud #{new_resource.name} repo as gem source" do
       command "gem source --add #{repo_url}"
