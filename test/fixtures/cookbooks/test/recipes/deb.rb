@@ -1,5 +1,3 @@
-include_recipe 'test::distro_deps'
-
 packagecloud_repo 'computology_public_deb' do
   repository 'computology/packagecloud-cookbook-test-public'
   type 'deb'

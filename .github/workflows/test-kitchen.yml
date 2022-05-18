@@ -26,7 +26,7 @@ jobs:
           - debian-10
           - debian-11
           - centos-7
-          - centos-8
+          - centos-stream-8
           - ubuntu-1804
           - ubuntu-2004
         suite:
