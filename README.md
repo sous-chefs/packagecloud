@@ -27,7 +27,7 @@ end
 
 For packagecloud:enterprise users, add `base_url` to your resource:
 
-```
+```ruby
 packagecloud_repo "computology/packagecloud-cookbook-test-private" do
   base_url "https://packages.example.com"
   type "deb"
@@ -37,7 +37,7 @@ end
 
 For forcing the os and dist for repository install:
 
-```
+```ruby
 packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
   type 'rpm'
   force_os 'rhel'
@@ -49,7 +49,7 @@ Valid options for `type` include `deb`, `rpm`, and `gem`.
 
 This cookbook performs checks to determine if a package exists before attempting to install it. To enable proxy support _for these checks_ (not to be confused with proxy support for your package manager of choice), add the following attributes to your cookbook:
 
-```
+```ruby
 default['packagecloud']['proxy_host'] = 'myproxy.organization.com'
 default['packagecloud']['proxy_port'] = '80'
 ```
@@ -76,7 +76,7 @@ Computology, LLC.
 
 ## License
 
-```
+```text
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
