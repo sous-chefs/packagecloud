@@ -2,7 +2,7 @@
 
 This is the Changelog for the packagecloud cookbook
 
-## Unreleased
+## 2.0.0 - *2023-04-03*
 
 - Sous Chefs Adoption
 - Require Chef 15.3+
