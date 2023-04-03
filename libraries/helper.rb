@@ -1,7 +1,7 @@
-require 'net/https'
-
 module PackageCloud
   module Helper
+    require 'net/https'
+
     def get(uri, params)
       uri.query     = URI.encode_www_form(params)
       req           = Net::HTTP::Get.new(uri.request_uri)

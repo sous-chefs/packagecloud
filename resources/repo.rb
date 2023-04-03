@@ -1,40 +1,40 @@
 unified_mode true
 
 property :repository,
-        String,
-        name_property: true
+          String,
+          name_property: true
 
 property :master_token,
-        String
+          String
 
 property :force_os,
-        String
+          String
 
 property :force_dist,
-        String
+          String
 
 property :type,
-        String,
-        equal_to: %w(deb rpm gem),
-        default: lazy {
-                   value_for_platform_family(
-                                 'debian' => 'deb',
-                                 %w(rhel fedora amazon) => 'rpm'
-                               )
-                 }
+          String,
+          equal_to: %w(deb rpm gem),
+          default: lazy {
+            value_for_platform_family(
+              'debian' => 'deb',
+              %w(rhel fedora amazon) => 'rpm'
+            )
+          }
 
 property :base_url,
-        String,
-        default: 'https://packagecloud.io'
+          String,
+          default: 'https://packagecloud.io'
 
 property :priority,
-        [Integer, true, false],
-        default: false
+          [Integer, true, false],
+          default: false
 
 property :metadata_expire,
-        String,
-        regex: [/^\d+[d|h|m]?$/],
-        default: '300'
+          String,
+          regex: [/^\d+[d|h|m]?$/],
+          default: '300'
 
 action :add do
   case new_resource.type
@@ -88,11 +88,11 @@ action_class do
       source 'apt.erb'
       cookbook 'packagecloud'
       mode '0644'
-      variables lazy {
-        { base_url: repo_url.to_s,
-          distribution: dist_name,
-          component: 'main' }
-      }
+      variables(
+        base_url: repo_url.to_s,
+        distribution: dist_name,
+        component: 'main'
+      )
 
       notifies :run, "execute[apt-key-add-#{filename}]", :immediately
       notifies :run, "execute[apt-get-update-#{filename}]", :immediately
@@ -130,6 +130,7 @@ action_class do
 
     package 'pygpgme' do
       ignore_failure true
+      only_if { node['platform_version'].to_i < 8 }
     end
 
     log 'pygpgme_warning' do
@@ -139,14 +140,7 @@ action_class do
 
       level :warn
       not_if 'rpm -qa | grep -qw pygpgme'
-    end
-
-    ruby_block 'disable repo_gpgcheck if no pygpgme' do
-      block do
-        template = run_context.resource_collection.find(template: "/etc/yum.repos.d/#{filename}.repo")
-        template.variables[:repo_gpgcheck] = 0
-      end
-      not_if 'rpm -qa | grep -qw pygpgme'
+      only_if { node['platform_version'].to_i < 8 }
     end
 
     gpg_url = gpg_url(new_resource.base_url, new_resource.repository, :rpm, new_resource.master_token)
@@ -175,16 +169,20 @@ action_class do
 
     # reload internal Chef yum cache
     ruby_block "yum-cache-reload-#{filename}" do
-      block { Chef::Provider::Package::Yum::YumCache.instance.reload }
+      block do
+        if node['platform_version'].to_i >= 8
+          Chef::Provider::Package::Dnf::PythonHelper.instance.restart
+        else
+          Chef::Provider::Package::Yum::YumCache.instance.reload
+        end
+      end
       action :nothing
     end
   end
 
   def install_gem
-    base_url = new_resource.base_url
-
-    repo_url = construct_uri_with_options(base_url: base_url, repo: new_resource.repository)
-    repo_url = read_token(repo_url, true).to_s
+    repo_url = construct_uri_with_options(base_url: new_resource.base_url, repo: new_resource.repository)
+    repo_url = read_token(repo_url).to_s
 
     execute "install packagecloud #{new_resource.name} repo as gem source" do
       command "gem source --add #{repo_url}"
@@ -192,7 +190,7 @@ action_class do
     end
   end
 
-  def read_token(repo_url, gems = false)
+  def read_token(repo_url)
     return repo_url unless new_resource.master_token
 
     base_url = new_resource.base_url
@@ -207,11 +205,8 @@ action_class do
 
     Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
 
-    if rhel5? && !gems
-    else
-      repo_url.user     = resp.body.chomp
-      repo_url.password = ''
-    end
+    repo_url.user     = resp.body.chomp
+    repo_url.password = ''
     repo_url
   end
 
@@ -246,10 +241,6 @@ action_class do
 
   def filename
     new_resource.name.gsub(/[^0-9A-z.\-]/, '_')
-  end
-
-  def rhel5?
-    platform_family?('rhel') && node['platform_version'].to_i == 5
   end
 
   def construct_uri_with_options(options)
