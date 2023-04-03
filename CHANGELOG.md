@@ -2,6 +2,12 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## Unreleased
+
+- Sous Chefs Adoption
+- Require Chef 15.3+
+- Add standard files
+
 ## v1.0.1 (2018-10-25)
 
 Fix issues with newer versions of Chef (11+) by conditionally defining `source_url` and `issues_url` in metadata.rb
@@ -50,7 +56,3 @@ Beginning in 0.1.0, you can use `default['packagecloud']['hostname_override']` t
 ## v0.0.1 (2014-06-05)
 
 Initial release.
-
-## v0.0.1 (2014-06-05)
-
-Initial release!

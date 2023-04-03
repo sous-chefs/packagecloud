@@ -1,0 +1,54 @@
+---
+name: ci
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint-unit:
+    uses: sous-chefs/.github/.github/workflows/lint-unit.yml@2.0.1
+    permissions:
+      actions: write
+      checks: write
+      pull-requests: write
+      statuses: write
+      issues: write
+
+  integration:
+    needs: lint-unit
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - "almalinux-8"
+          - "almalinux-9"
+          - "centos-7"
+          - "centos-stream-8"
+          - "centos-stream-9"
+          - "debian-10"
+          - "debian-11"
+          - "rockylinux-8"
+          - "rockylinux-9"
+          - "ubuntu-1804"
+          - "ubuntu-2004"
+          - "ubuntu-2204"
+        suite:
+          - "default"
+      fail-fast: false
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Install Chef
+        uses: actionshub/chef-install@2.0.4
+      - name: Dokken
+        uses: actionshub/test-kitchen@2.1.0
+        env:
+          CHEF_LICENSE: accept-no-persist
+          KITCHEN_LOCAL_YAML: kitchen.dokken.yml
+        with:
+          suite: ${{ matrix.suite }}
+          os: ${{ matrix.os }}

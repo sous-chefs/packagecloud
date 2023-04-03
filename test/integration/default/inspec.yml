@@ -1,0 +1,6 @@
+---
+name: packagecloud-integration-tests
+title: Integration tests for packagecloud cookbook
+summary: This InSpec profile contains integration tests for packagecloud cookbook
+supports:
+  - os-family: linux
