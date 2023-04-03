@@ -3,8 +3,8 @@ module PackageCloud
     require 'net/https'
 
     def get(uri, params)
-      uri.query     = URI.encode_www_form(params)
-      req           = Net::HTTP::Get.new(uri.request_uri)
+      uri.query = URI.encode_www_form(params)
+      req       = Net::HTTP::Get.new(uri.request_uri)
 
       req.basic_auth uri.user, uri.password if uri.user
 
