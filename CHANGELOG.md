@@ -4,6 +4,8 @@ This is the Changelog for the packagecloud cookbook
 
 ## Unreleased
 
+- Add metadata check from the shard workflow
+
 ## 2.0.1 - *2023-04-03*
 
 - Update README
