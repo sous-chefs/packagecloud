@@ -2,6 +2,8 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## Unreleased
+
 ## 2.0.2 - *2023-04-26*
 
 - Add metadata check from the shard workflow
