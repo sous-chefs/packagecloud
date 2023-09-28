@@ -2,6 +2,8 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## Unreleased
+
 ## 2.0.6 - *2023-09-28*
 
 ## 2.0.5 - *2023-09-04*
