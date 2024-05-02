@@ -2,6 +2,8 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## Unreleased
+
 ## 2.0.8 - *2024-05-02*
 
 ## 2.0.7 - *2024-05-02*
