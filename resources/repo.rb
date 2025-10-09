@@ -240,7 +240,7 @@ action_class do
   end
 
   def filename
-    new_resource.name.gsub(/[^0-9A-z.\-]/, '_')
+    new_resource.name.gsub(/[^0-9A-Za-z.\-]/, '_')
   end
 
   def construct_uri_with_options(options)
