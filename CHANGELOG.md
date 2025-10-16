@@ -2,6 +2,13 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## [2.0.10](https://github.com/sous-chefs/packagecloud/compare/2.0.9...v2.0.10) (2025-10-16)
+
+
+### Bug Fixes
+
+* **ci:** Update workflows to use release pipeline ([#86](https://github.com/sous-chefs/packagecloud/issues/86)) ([26779c5](https://github.com/sous-chefs/packagecloud/commit/26779c5cfa48e20335e275273b040d112c4adafe))
+
 ## 2.0.2 - *2023-04-26*
 
 * Add metadata check from the shard workflow
