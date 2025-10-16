@@ -2,35 +2,19 @@
 
 This is the Changelog for the packagecloud cookbook
 
-## Unreleased
-
-## 2.0.9 - *2025-09-04*
-
-## 2.0.8 - *2024-05-02*
-
-## 2.0.7 - *2024-05-02*
-
-## 2.0.6 - *2023-09-28*
-
-## 2.0.5 - *2023-09-04*
-
-## 2.0.4 - *2023-07-10*
-
-## 2.0.3 - *2023-05-31*
-
 ## 2.0.2 - *2023-04-26*
 
-- Add metadata check from the shard workflow
+* Add metadata check from the shard workflow
 
 ## 2.0.1 - *2023-04-03*
 
-- Update README
+* Update README
 
 ## 2.0.0 - *2023-04-03*
 
-- Sous Chefs Adoption
-- Require Chef 15.3+
-- Add standard files
+* Sous Chefs Adoption
+* Require Chef 15.3+
+* Add standard files
 
 ## v1.0.1 (2018-10-25)
 
