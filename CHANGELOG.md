@@ -2,6 +2,22 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## [3.0.0](https://github.com/sous-chefs/packagecloud/compare/v2.0.10...v3.0.0) (2026-05-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate packagecloud to custom resources ([#91](https://github.com/sous-chefs/packagecloud/issues/91))
+
+### Features
+
+* migrate packagecloud to custom resources ([#91](https://github.com/sous-chefs/packagecloud/issues/91)) ([9aff449](https://github.com/sous-chefs/packagecloud/commit/9aff4492ec913278f2c934df0b5ff445b18c92b1))
+
+
+### Bug Fixes
+
+* **ci:** Update workflows to use release pipeline ([#86](https://github.com/sous-chefs/packagecloud/issues/86)) ([26779c5](https://github.com/sous-chefs/packagecloud/commit/26779c5cfa48e20335e275273b040d112c4adafe))
+
 ## [2.0.10](https://github.com/sous-chefs/packagecloud/compare/2.0.9...v2.0.10) (2025-10-16)
 
 
