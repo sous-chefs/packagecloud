@@ -1,70 +1,79 @@
-# `pacakgecloud_repo`
+# packagecloud_repo
 
-The packagecloud_repo resource manages the installation of package repositories on various systems, including Debian, RHEL, Fedora, and Amazon Linux. It supports deb, rpm, and gem package types.
-Properties
+Manages packagecloud.io APT, YUM/DNF, and RubyGems repository sources.
 
-The following table provides an overview of the available properties for packagecloud_repo:
+## Actions
 
-| Property        | Type    | Description                                                                                    | Default                   |
-|-----------------|---------|------------------------------------------------------------------------------------------------|---------------------------|
-| repository      | String  | The name of the repository to install.                                                         |                           |
-| master_token    | String  | The master token for the repository. This is only required for private repositories.           |                           |
-| force_os        | String  | The OS to force for the repository. This is only required for some repositories.               |                           |
-| force_dist      | String  | The distribution to force for the repository. This is only required for some repositories.     |                           |
-| type            | String  | The type of repository to install. Valid values are `deb`, `rpm`, and `gem`.                   |                           |
-| base_url        | String  | The base URL for the repository. This is only required for packagecloud:enterprise users.      | `https://packagecloud.io` |
-| priority        | Integer | The priority of the repository. This is only required for Debian-based systems.                | false                     |
-| metadata_expire | String  | The metadata expiration time for the repository. This is only required for RHEL-based systems. | 300                       |
+| Action    | Description                                   |
+|-----------|-----------------------------------------------|
+| `:add`    | Adds the repository source. Default action.   |
+| `:remove` | Removes the repository source where possible. |
+
+## Properties
+
+| Property            | Type                         | Default                   | Description                                                      |
+|---------------------|------------------------------|---------------------------|------------------------------------------------------------------|
+| `repository`        | String                       | name property             | packagecloud repository path, such as `owner/repository`.        |
+| `master_token`      | String                       | `nil`                     | Master token for private repositories.                           |
+| `force_os`          | String                       | `nil`                     | Override the detected packagecloud OS name.                      |
+| `force_dist`        | String                       | `nil`                     | Override the detected packagecloud distribution name.            |
+| `type`              | String                       | platform family default   | Repository type: `deb`, `rpm`, or `gem`.                         |
+| `base_url`          | String                       | `https://packagecloud.io` | Base URL for packagecloud Enterprise installs.                   |
+| `base_repo_path`    | String                       | `/install/repositories/`  | packagecloud install API path.                                   |
+| `gpg_key_path`      | String                       | `/gpgkey`                 | packagecloud GPG key path retained for wrapper compatibility.    |
+| `hostname_override` | String, nil                  | `nil`                     | Hostname sent to packagecloud when Ohai cannot determine one.    |
+| `proxy_host`        | String, nil                  | `nil`                     | Proxy host used for packagecloud API requests.                   |
+| `proxy_port`        | String, Integer, nil         | `nil`                     | Proxy port used for packagecloud API requests.                   |
+| `priority`          | Integer, true, false         | `false`                   | Optional YUM repository priority.                                |
+| `metadata_expire`   | String                       | `300`                     | YUM metadata expiration value.                                   |
 
 ## Examples
 
+### Public repository
+
 ```ruby
-packagecloud_repo "computology/packagecloud-cookbook-test" do
-  type "deb"
+packagecloud_repo 'computology/packagecloud-cookbook-test-public'
+```
+
+### Private repository
+
+```ruby
+packagecloud_repo 'computology/packagecloud-cookbook-test-private' do
+  master_token '762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9'
 end
 ```
 
-### Public Repository
+### packagecloud Enterprise
 
 ```ruby
-packagecloud_repo "computology/packagecloud-cookbook-test-public"
-```
-
-### Private Repositories
-
-For private repositories, you need to supply a `master_token`:
-
-```ruby
-packagecloud_repo "computology/packagecloud-cookbook-test-private" do
-  master_token "762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9"
+packagecloud_repo 'computology/packagecloud-cookbook-test-private' do
+  base_url 'https://packages.example.com'
+  master_token '762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9'
 end
 ```
 
-### Enterprise Users
-
-For packagecloud:enterprise users, add `base_url` to your resource:
-
-```ruby
-packagecloud_repo "computology/packagecloud-cookbook-test-private" do
-  base_url "https://packages.example.com"
-  master_token "762748f7ae0bfdb086dd539575bdc8cffdca78c6a9af0db9"
-end
-```
-
-### Force OS and Dist
-
-For forcing the os and dist for repository install:
+### Force OS and distribution
 
 ```ruby
 packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
   force_os 'rhel'
-  force_dist '6.5'
+  force_dist '9'
 end
 ```
 
-This cookbook performs checks to determine if a package exists before attempting to install it. To enable proxy support _for these checks_ (not to be confused with proxy support for your package manager of choice), add the following attributes to your cookbook:
+### Proxy packagecloud API requests
 
 ```ruby
-default['packagecloud']['proxy_host'] = 'myproxy.organization.com'
-default['packagecloud']['proxy_port'] = '80'
+packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
+  proxy_host 'myproxy.organization.com'
+  proxy_port '80'
+end
+```
+
+### Remove a repository
+
+```ruby
+packagecloud_repo 'computology/packagecloud-cookbook-test-public' do
+  action :remove
+end
 ```

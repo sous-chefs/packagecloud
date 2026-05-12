@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 name 'test'
 
 depends 'yum'

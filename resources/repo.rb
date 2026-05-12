@@ -1,4 +1,8 @@
+# frozen_string_literal: true
+
+provides :packagecloud_repo
 unified_mode true
+default_action :add
 
 property :repository,
           String,
@@ -27,6 +31,26 @@ property :base_url,
           String,
           default: 'https://packagecloud.io'
 
+property :base_repo_path,
+          String,
+          default: '/install/repositories/'
+
+property :gpg_key_path,
+          String,
+          default: '/gpgkey'
+
+property :hostname_override,
+          [String, nil]
+
+property :proxy_host,
+          [String, nil],
+          desired_state: false
+
+property :proxy_port,
+          [String, Integer, nil],
+          default: nil,
+          desired_state: false
+
 property :priority,
           [Integer, true, false],
           default: false
@@ -49,13 +73,26 @@ action :add do
   end
 end
 
+action :remove do
+  case new_resource.type
+  when 'deb'
+    remove_deb
+  when 'rpm'
+    remove_rpm
+  when 'gem'
+    remove_gem
+  else
+    raise "#{new_resource.type} is an unknown package type."
+  end
+end
+
 action_class do
   include ::PackageCloud::Helper
 
   require 'uri'
 
   def gpg_url(base_url, repo, format, master_token)
-    base_install_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
+    base_install_url = ::File.join(base_url, new_resource.base_repo_path)
     ext = (format == :deb) ? 'list' : 'repo'
     gpg_key_url_endpoint = construct_uri_with_options(base_url: base_install_url, repo: repo, endpoint: "gpg_key_url.#{ext}")
     unless master_token.nil?
@@ -114,9 +151,21 @@ action_class do
     end
   end
 
+  def remove_deb
+    file "/etc/apt/sources.list.d/#{filename}.list" do
+      action :delete
+      notifies :update, "apt_update[apt-get-update-#{filename}]", :immediately
+    end
+
+    apt_update "apt-get-update-#{filename}" do
+      action :nothing
+      only_if { ::File.directory?('/var/lib/apt/lists') }
+    end
+  end
+
   def install_rpm
     given_base_url = new_resource.base_url
-    base_repo_url = ::File.join(given_base_url, node['packagecloud']['base_repo_path'])
+    base_repo_url = ::File.join(given_base_url, new_resource.base_repo_path)
     base_url_endpoint = construct_uri_with_options(base_url: base_repo_url, repo: new_resource.repository, endpoint: 'rpm_base_url')
 
     if new_resource.master_token
@@ -180,6 +229,31 @@ action_class do
     end
   end
 
+  def remove_rpm
+    file "/etc/yum.repos.d/#{filename}.repo" do
+      action :delete
+      notifies :run, "execute[yum-makecache-#{filename}]", :immediately
+      notifies :run, "ruby_block[yum-cache-reload-#{filename}]", :immediately
+    end
+
+    execute "yum-makecache-#{filename}" do
+      command 'yum -q makecache -y'
+      action :nothing
+      only_if { ::File.exist?('/usr/bin/yum') || ::File.exist?('/usr/bin/dnf') }
+    end
+
+    ruby_block "yum-cache-reload-#{filename}" do
+      block do
+        if node['platform_version'].to_i >= 8
+          Chef::Provider::Package::Dnf::PythonHelper.instance.restart
+        else
+          Chef::Provider::Package::Yum::YumCache.instance.reload
+        end
+      end
+      action :nothing
+    end
+  end
+
   def install_gem
     repo_url = construct_uri_with_options(base_url: new_resource.base_url, repo: new_resource.repository)
     repo_url = read_token(repo_url).to_s
@@ -190,12 +264,24 @@ action_class do
     end
   end
 
+  def remove_gem
+    repo_url = construct_uri_with_options(base_url: new_resource.base_url, repo: new_resource.repository).to_s
+    repo_uri = URI(repo_url)
+    escaped_repo_path = Regexp.escape(repo_uri.path)
+    escaped_repo_host = Regexp.escape(repo_uri.host)
+
+    execute "remove packagecloud #{new_resource.name} repo as gem source" do
+      command "gem sources --list | ruby -ne 'puts $_ if $_ =~ %r{#{escaped_repo_host}.*#{escaped_repo_path}}' | xargs -r -n1 gem sources --remove"
+      only_if "gem sources --list | ruby -ne 'exit 0 if $_ =~ %r{#{escaped_repo_host}.*#{escaped_repo_path}}; END { exit 1 }'"
+    end
+  end
+
   def read_token(repo_url)
     return repo_url unless new_resource.master_token
 
     base_url = new_resource.base_url
 
-    base_repo_url = ::File.join(base_url, node['packagecloud']['base_repo_path'])
+    base_repo_url = ::File.join(base_url, new_resource.base_repo_path)
 
     uri = construct_uri_with_options(base_url: base_repo_url, repo: new_resource.repository, endpoint: 'tokens.text')
     uri.user     = new_resource.master_token
@@ -213,12 +299,12 @@ action_class do
   def install_endpoint_params
     dist = dist_name
 
-    hostname = node['packagecloud']['hostname_override'] ||
+    hostname = new_resource.hostname_override ||
                node['fqdn'] ||
                node['hostname']
 
     if !hostname || hostname.empty?
-      raise("Can't determine hostname!  Set node['packagecloud']['hostname_override'] " \
+      raise("Can't determine hostname! Set the packagecloud_repo hostname_override property " \
             'if it cannot be automatically determined by Ohai.')
     end
 
