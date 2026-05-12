@@ -6,6 +6,11 @@
 
 This cookbook provides a resource for installing <https://packagecloud.io> repositories.
 
+## Migration
+
+This cookbook no longer provides node attributes. See [migration.md](migration.md)
+for the breaking changes and resource property replacements.
+
 ## Usage
 
 ## Resources
