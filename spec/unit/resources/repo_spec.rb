@@ -20,6 +20,7 @@ describe 'packagecloud_repo' do
   before do
     allow(Net::HTTP).to receive(:new).and_return(http)
     allow(http).to receive(:use_ssl=)
+    allow(http).to receive(:ca_file=)
     allow(http).to receive(:start).and_yield(http)
     allow(http).to receive(:request).and_return(gpg_response)
   end
