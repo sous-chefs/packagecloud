@@ -2,6 +2,13 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## [3.0.1](https://github.com/sous-chefs/packagecloud/compare/v3.0.0...v3.0.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* migrate to Policyfile ([#100](https://github.com/sous-chefs/packagecloud/issues/100)) ([87c5214](https://github.com/sous-chefs/packagecloud/commit/87c5214782cd57fcc158d567bc2615ad6df31900))
+
 ## [3.0.0](https://github.com/sous-chefs/packagecloud/compare/v2.0.10...v3.0.0) (2026-05-12)
 
 
