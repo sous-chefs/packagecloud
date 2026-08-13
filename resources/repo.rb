@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'shellwords'
+
 provides :packagecloud_repo
 unified_mode true
 default_action :add
@@ -259,20 +261,21 @@ action_class do
     repo_url = read_token(repo_url).to_s
 
     execute "install packagecloud #{new_resource.name} repo as gem source" do
-      command "gem source --add #{repo_url}"
-      not_if "gem source --list | grep #{repo_url}"
+      command Shellwords.join(['gem', 'source', '--add', repo_url])
+      not_if { gem_source_exists?(repo_url) }
     end
   end
 
   def remove_gem
     repo_url = construct_uri_with_options(base_url: new_resource.base_url, repo: new_resource.repository).to_s
-    repo_uri = URI(repo_url)
-    escaped_repo_path = Regexp.escape(repo_uri.path)
-    escaped_repo_host = Regexp.escape(repo_uri.host)
 
-    execute "remove packagecloud #{new_resource.name} repo as gem source" do
-      command "gem sources --list | ruby -ne 'puts $_ if $_ =~ %r{#{escaped_repo_host}.*#{escaped_repo_path}}' | xargs -r -n1 gem sources --remove"
-      only_if "gem sources --list | ruby -ne 'exit 0 if $_ =~ %r{#{escaped_repo_host}.*#{escaped_repo_path}}; END { exit 1 }'"
+    ruby_block "remove packagecloud #{new_resource.name} repo as gem source" do
+      block do
+        gem_sources_matching(repo_url).each do |source|
+          shell_out!(Shellwords.join(['gem', 'sources', '--remove', source]))
+        end
+      end
+      only_if { gem_source_exists?(repo_url) }
     end
   end
 
@@ -294,6 +297,27 @@ action_class do
     repo_url.user     = resp.body.chomp
     repo_url.password = ''
     repo_url
+  end
+
+  def gem_sources
+    cmd = shell_out('gem sources --list')
+    return [] unless cmd.exitstatus == 0
+
+    cmd.stdout.lines.map(&:strip)
+  end
+
+  def gem_sources_matching(repo_url)
+    repo_uri = URI(repo_url)
+    gem_sources.select do |source|
+      source_uri = URI(source)
+      source_uri.host == repo_uri.host && source_uri.path.start_with?(repo_uri.path)
+    rescue URI::InvalidURIError
+      false
+    end
+  end
+
+  def gem_source_exists?(repo_url)
+    gem_sources_matching(repo_url).any?
   end
 
   def install_endpoint_params
