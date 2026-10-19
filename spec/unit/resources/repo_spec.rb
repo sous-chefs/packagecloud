@@ -91,12 +91,11 @@ describe 'packagecloud_repo' do
   context 'with gem source' do
     platform 'ubuntu', '24.04'
 
-    before do
-      stub_command('gem source --list | grep https://packagecloud.io/test/repo/').and_return(false)
-      stub_command("gem sources --list | ruby -ne 'exit 0 if $_ =~ %r{packagecloud\\.io.*/test/repo/}; END { exit 1 }'").and_return(true)
-    end
-
     context 'with action :add' do
+      stubs_for_provider('packagecloud_repo[test/repo]') do |provider|
+        allow(provider).to receive_shell_out('gem sources --list', stdout: '')
+      end
+
       recipe do
         packagecloud_repo 'test/repo' do
           type 'gem'
@@ -107,6 +106,10 @@ describe 'packagecloud_repo' do
     end
 
     context 'with action :remove' do
+      stubs_for_provider('packagecloud_repo[test/repo]') do |provider|
+        allow(provider).to receive_shell_out('gem sources --list', stdout: "https://packagecloud.io/test/repo/\n")
+      end
+
       recipe do
         packagecloud_repo 'test/repo' do
           type 'gem'
@@ -114,7 +117,7 @@ describe 'packagecloud_repo' do
         end
       end
 
-      it { is_expected.to run_execute('remove packagecloud test/repo repo as gem source') }
+      it { is_expected.to run_ruby_block('remove packagecloud test/repo repo as gem source') }
     end
   end
 end
