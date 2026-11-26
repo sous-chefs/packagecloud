@@ -1,4 +1,4 @@
-# Limitations
+# Agent Notes
 
 ## Package Availability
 
@@ -51,3 +51,10 @@ No source or compiled installation path is managed by this cookbook.
 * APT repository installation still uses the legacy `apt-key` command because
   that is the behavior exposed by the existing resource and packagecloud
   repository install flow.
+
+## Policyfile Migration Notes
+
+* Dependency resolution is managed by `Policyfile.rb`; do not reintroduce
+  legacy dependency files.
+* Test Kitchen suites use Policyfile named run lists. Keep `Policyfile.rb`,
+  Kitchen suite names, and CI matrix suite names aligned when adding suites.

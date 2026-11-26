@@ -12,6 +12,7 @@ module PackageCloud
 
       http = Net::HTTP.new(uri.hostname, uri.port, *proxy_options)
       http.use_ssl = true
+      http.ca_file = system_ca_file if system_ca_file
 
       resp = http.start { |h| h.request(req) }
 
@@ -31,6 +32,7 @@ module PackageCloud
 
       http = Net::HTTP.new(uri.hostname, uri.port, *proxy_options)
       http.use_ssl = true
+      http.ca_file = system_ca_file if system_ca_file
 
       resp = http.start { |h| h.request(req) }
 
@@ -46,6 +48,13 @@ module PackageCloud
       return [] unless new_resource.proxy_host
 
       [new_resource.proxy_host, new_resource.proxy_port]
+    end
+
+    def system_ca_file
+      %w(
+        /etc/ssl/certs/ca-certificates.crt
+        /etc/pki/tls/certs/ca-bundle.crt
+      ).find { |path| ::File.exist?(path) }
     end
   end
 end

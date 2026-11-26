@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'shellwords'
-
 provides :packagecloud_repo
 unified_mode true
 default_action :add
@@ -260,9 +258,10 @@ action_class do
     repo_url = construct_uri_with_options(base_url: new_resource.base_url, repo: new_resource.repository)
     repo_url = read_token(repo_url).to_s
 
-    execute "install packagecloud #{new_resource.name} repo as gem source" do
-      command Shellwords.join(['gem', 'source', '--add', repo_url])
-      not_if { gem_source_exists?(repo_url) }
+    ruby_block "install packagecloud #{new_resource.name} repo as gem source" do
+      sensitive true
+      block { gem_sources_command('--add', repo_url).error! }
+      not_if { gem_sources.include?(repo_url) }
     end
   end
 
@@ -270,12 +269,13 @@ action_class do
     repo_url = construct_uri_with_options(base_url: new_resource.base_url, repo: new_resource.repository).to_s
 
     ruby_block "remove packagecloud #{new_resource.name} repo as gem source" do
+      sensitive true
       block do
         gem_sources_matching(repo_url).each do |source|
-          shell_out!(Shellwords.join(['gem', 'sources', '--remove', source]))
+          gem_sources_command('--remove', source).error!
         end
       end
-      only_if { gem_source_exists?(repo_url) }
+      only_if { gem_sources_matching(repo_url).any? }
     end
   end
 
@@ -292,18 +292,21 @@ action_class do
 
     resp = post(uri, install_endpoint_params)
 
-    Chef::Log.debug("#{new_resource.name} TOKEN = #{resp.body.chomp}")
-
     repo_url.user     = resp.body.chomp
     repo_url.password = ''
     repo_url
   end
 
   def gem_sources
-    cmd = shell_out('gem sources --list')
+    cmd = gem_sources_command('--list')
     return [] unless cmd.exitstatus == 0
 
     cmd.stdout.lines.map(&:strip)
+  end
+
+  def gem_sources_command(*arguments)
+    # The command and its output may contain credentials.
+    Mixlib::ShellOut.new('gem', 'sources', *arguments, sensitive: true).run_command
   end
 
   def gem_sources_matching(repo_url)
@@ -314,10 +317,6 @@ action_class do
     rescue URI::InvalidURIError
       false
     end
-  end
-
-  def gem_source_exists?(repo_url)
-    gem_sources_matching(repo_url).any?
   end
 
   def install_endpoint_params
