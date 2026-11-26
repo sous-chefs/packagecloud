@@ -2,6 +2,13 @@
 
 This is the Changelog for the packagecloud cookbook
 
+## [3.0.2](https://github.com/sous-chefs/packagecloud/compare/v3.0.1...v3.0.2) (2026-11-26)
+
+
+### Bug Fixes
+
+* harden gem source commands ([#94](https://github.com/sous-chefs/packagecloud/issues/94)) ([e71e6a6](https://github.com/sous-chefs/packagecloud/commit/e71e6a61dd428a9548a7d28a71a76199a0d56a47))
+
 ## [3.0.1](https://github.com/sous-chefs/packagecloud/compare/v3.0.0...v3.0.1) (2026-07-09)
 
 
