@@ -91,22 +91,31 @@ describe 'packagecloud_repo' do
   context 'with gem source' do
     platform 'ubuntu', '24.04'
 
-    before do
-      stub_command('gem source --list | grep https://packagecloud.io/test/repo/').and_return(false)
-      stub_command("gem sources --list | ruby -ne 'exit 0 if $_ =~ %r{packagecloud\\.io.*/test/repo/}; END { exit 1 }'").and_return(true)
-    end
-
     context 'with action :add' do
+      stubs_for_provider('packagecloud_repo[test/repo]') do |provider|
+        allow(provider).to receive(:gem_sources).and_return([])
+      end
+
       recipe do
         packagecloud_repo 'test/repo' do
           type 'gem'
         end
       end
 
-      it { is_expected.to run_execute('install packagecloud test/repo repo as gem source') }
+      it { is_expected.to run_ruby_block('install packagecloud test/repo repo as gem source') }
     end
 
     context 'with action :remove' do
+      stubs_for_provider('packagecloud_repo[test/repo]') do |provider|
+        allow(provider).to receive(:gem_sources).and_return(configured_sources)
+        expect(provider).to receive(:gem_sources_command).with('--remove', configured_sources.first).and_return(double(error!: nil))
+        expect(provider).to receive(:gem_sources_command).with('--remove', configured_sources[1]).and_return(double(error!: nil))
+      end
+
+      let(:configured_sources) do
+        %w(https://packagecloud.io/test/repo/ https://stale-token:@packagecloud.io/test/repo/ https://packagecloud.io/test/repo-other/)
+      end
+
       recipe do
         packagecloud_repo 'test/repo' do
           type 'gem'
@@ -114,7 +123,37 @@ describe 'packagecloud_repo' do
         end
       end
 
-      it { is_expected.to run_execute('remove packagecloud test/repo repo as gem source') }
+      it 'removes public and authenticated variants while preserving a sibling repository' do
+        chef_run.ruby_block('remove packagecloud test/repo repo as gem source').block.call
+      end
+    end
+
+    context 'with an authenticated source' do
+      stubs_for_provider('packagecloud_repo[test/repo]') do |provider|
+        allow(provider).to receive(:post).and_return(instance_double(Net::HTTPOK, body: "current-token\n"))
+        allow(provider).to receive(:gem_sources).and_return(configured_sources)
+      end
+
+      recipe do
+        packagecloud_repo 'test/repo' do
+          type 'gem'
+          master_token 'fixture-master-token'
+        end
+      end
+
+      context 'when only public and stale credentials are registered' do
+        let(:configured_sources) do
+          %w(https://packagecloud.io/test/repo/ https://stale-token:@packagecloud.io/test/repo/)
+        end
+
+        it { is_expected.to run_ruby_block('install packagecloud test/repo repo as gem source') }
+      end
+
+      context 'when the exact authenticated URL is registered' do
+        let(:configured_sources) { ['https://current-token:@packagecloud.io/test/repo/'] }
+
+        it { is_expected.not_to run_ruby_block('install packagecloud test/repo repo as gem source') }
+      end
     end
   end
 end
